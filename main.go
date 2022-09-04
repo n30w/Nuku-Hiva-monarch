@@ -73,3 +73,5 @@ func main() {
 	fmt.Printf("Received %d posts.\n", len(posts))
 
 }
+
+// Git push test
