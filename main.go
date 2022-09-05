@@ -5,7 +5,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
@@ -59,19 +61,38 @@ func main() {
 		}
 	}()
 
-	client, _ := reddit.NewClient(credentials)
+	var ctx = context.Background()
 
-	posts, _, err := client.Subreddit.TopPosts(context.Background(), "golang", &reddit.ListPostOptions{
-		ListOptions: reddit.ListOptions{
-			Limit: 5,
-		},
-		Time: "all",
-	})
+	// List saved posts by time
+	httpClient := &http.Client{Timeout: time.Second * 30}
+	client, _ := reddit.NewClient(credentials, reddit.WithHTTPClient(httpClient))
+
+	// client.OnRequestCompleted(
+	// 	func(r1 *http.Request, r2 *http.Response) {
+	// 		fmt.Printf("%s %s %s\n", req.Method, req.URL, res.Status)
+	// 	})
+
+	opts := reddit.ListUserOverviewOptions{
+		ListOptions: reddit.ListOptions{Limit: 100, After: "", Before: ""},
+		Sort:        "new",
+		Time:        "all",
+	}
+
+	mySavedPosts, _, _, err := client.User.Saved(ctx, &opts)
 	if err != nil {
 		return
 	}
-	fmt.Printf("Received %d posts.\n", len(posts))
+
+	for _, post := range mySavedPosts {
+		fmt.Printf("%s | %s\n", post.Title, post.URL)
+	}
 
 }
+
+// TODO:
+// - Add Vue and front end support
+// - Cryptographic password for the link file
+//  - require user to input during runtime
+// - Database support using Mongo or something else like SQL
 
 // Git push test
