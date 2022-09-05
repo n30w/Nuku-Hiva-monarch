@@ -14,7 +14,11 @@ import (
 
 func main() {
 
-	// Retrieves credentials from text file. This is only kept locally. Also, its pretty bad to keep this kind of information in plain text. Don't do that.
+	/*
+		Retrieves credentials from text file. This is only kept locally.
+		Also, its pretty bad to keep this kind of information in plain text.
+		Don't do that.
+	*/
 	credentials := func() reddit.Credentials {
 
 		line := 0
@@ -45,7 +49,6 @@ func main() {
 				}
 			}
 			line++
-			// fmt.Println(scanner.Text())
 		}
 
 		if err := scanner.Err(); err != nil {
@@ -63,36 +66,38 @@ func main() {
 
 	var ctx = context.Background()
 
-	// List saved posts by time
+	/*
+		Establish connection
+	*/
 	httpClient := &http.Client{Timeout: time.Second * 30}
 	client, _ := reddit.NewClient(credentials, reddit.WithHTTPClient(httpClient))
 
-	// client.OnRequestCompleted(
-	// 	func(r1 *http.Request, r2 *http.Response) {
-	// 		fmt.Printf("%s %s %s\n", req.Method, req.URL, res.Status)
-	// 	})
-
+	/*
+		Options to satisfy client.User.Saved's 2nd parameter
+	*/
 	opts := reddit.ListUserOverviewOptions{
-		ListOptions: reddit.ListOptions{Limit: 100, After: "", Before: ""},
-		Sort:        "new",
-		Time:        "all",
+		ListOptions: reddit.ListOptions{
+			Limit:  100,
+			After:  "",
+			Before: "",
+		},
+		Sort: "new",
+		Time: "all",
 	}
 
+	/*
+		Retrieve saved posts, store in var
+	*/
 	mySavedPosts, _, _, err := client.User.Saved(ctx, &opts)
 	if err != nil {
 		return
 	}
 
+	/*
+		Retrieve and print saved posts by time
+	*/
 	for _, post := range mySavedPosts {
 		fmt.Printf("%s | %s\n", post.Title, post.URL)
 	}
 
 }
-
-// TODO:
-// - Add Vue and front end support
-// - Cryptographic password for the link file
-//  - require user to input during runtime
-// - Database support using Mongo or something else like SQL
-
-// Git push test
