@@ -2,6 +2,10 @@
 
 This project is named after a bird. Anyway, this gets my saved posts on Reddit and displays it on a website interface.
 
+## Links
+
+- [How to get more JSON Results](https://old.reddit.com/r/redditdev/comments/d7egb/how_to_get_more_json_results_i_get_only_30/)
+
 ## Planned Features
 
 - Add Vue and front-end support

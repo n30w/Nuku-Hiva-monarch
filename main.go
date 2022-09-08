@@ -67,73 +67,75 @@ func main() {
 
 	var ctx = context.Background()
 
-	/*
-		Establish connection
-	*/
+	// Establish connection to Reddit API
 	httpClient := &http.Client{Timeout: time.Second * 30}
 	client, _ := reddit.NewClient(credentials, reddit.WithHTTPClient(httpClient))
 
-	// Update ID listing for saved
-	// Use After
+	saved, err := func() ([]reddit.Post, error) {
+		opts := reddit.ListUserOverviewOptions{
+			ListOptions: reddit.ListOptions{
+				Limit:  100,
+				After:  "",
+				Before: "",
+			},
+			Sort: "new",
+			Time: "all",
+		}
 
-	opts := reddit.ListUserOverviewOptions{
-		ListOptions: reddit.ListOptions{
-			Limit:  100,
-			After:  "",
-			Before: "",
-		},
-		Sort: "new",
-		Time: "all",
-	}
+		// Returns for client.User.Saved method
+		var mySavedPosts []*reddit.Post
+		// var mySavedComments []*reddit.Comment
+		var response *reddit.Response
+		var err error
+		// All saved posts
+		allSaved := []reddit.Post{}
 
-	var allSaved [][]reddit.Post
+		// Reddit's API total request limit for saved posts
+		totalRequestLimit := 1000 / 100 // The 100 is for Limit
 
-	// Retrieved saved posts, comments, and the response, which contains
-	// the http response to update ListOptions.After
-	mySavedPosts, mySavedComments, response, err := client.User.Saved(ctx, &opts)
+		for i := 0; i < totalRequestLimit; i++ {
+			// Retrieved saved posts; comments
+			mySavedPosts, _, response, err = client.User.Saved(ctx, &opts)
+			if err != nil {
+				return nil, err
+			}
+
+			fmt.Println("Save pull in progress...")
+			for _, post := range mySavedPosts {
+				allSaved = append(allSaved, *post)
+			}
+
+			// Update ListOptions.After
+			opts.ListOptions.After = response.After
+			time.Sleep(1 * time.Second) // Its recommend to only hit Reddit with 1 request/sec
+		}
+
+		return allSaved, err
+	}()
 	if err != nil {
 		return
 	}
 
-	allSaved[0] = append(allSaved[0], mySavedPosts)
-	after := response.After
-
-	// Reddit's API total request limit for saved posts
-	totalRequestLimit := 1000 / 100 // The 100 is for Limit
-
-	// Update Reponse
-	for i := 0; i <= totalRequestLimit; i++ {
-		opts.ListOptions.After = after
-		mySavedPosts, mySavedComments, response, err = client.User.Saved(ctx, &opts)
-		if err != nil {
-			return
-		}
-		after = response.After
-	}
-
-	fmt.Println(response.After)
-
-	// Print out saved posts and comments
+	// Print out saved posts
 	{
-		author := color.New(color.FgCyan)
-		subredditName := color.New(color.FgHiGreen)
-		commentLink := color.New(color.FgHiYellow)
+		title := color.New(color.BgHiYellow)
+		link := color.New(color.FgCyan)
 
-		for _, post := range mySavedPosts {
-			fmt.Printf("%s | %s\n", post.Title, post.URL)
+		for _, post := range saved {
+			title.Printf("%s", post.Title)
+			fmt.Print(" | ")
+			link.Printf("%s\n", post.URL)
 		}
 		fmt.Println("============================")
-		for _, post := range mySavedComments {
-			author.Printf("%s ", post.Author)
-			fmt.Print("in")
-			subredditName.Printf(" %s ", post.SubredditName)
-			fmt.Print("@")
-			commentLink.Printf(" %s\n", post.PostPermalink)
-			fmt.Printf("%s\n\n", post.Body)
-		}
+		// for _, post := range mySavedComments {
+		// 	author.Printf("%s ", post.Author)
+		// 	fmt.Print("in")
+		// 	subredditName.Printf(" %s ", post.SubredditName)
+		// 	fmt.Print("@")
+		// 	commentLink.Printf(" %s\n", post.PostPermalink)
+		// 	fmt.Printf("%s\n\n", post.Body)
+		// }
 	}
-
-	fmt.Println(client.ID)
 
 }
 

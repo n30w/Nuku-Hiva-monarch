@@ -2,10 +2,12 @@ module nuku-hiva-monarch
 
 go 1.19
 
-require github.com/vartanbeno/go-reddit/v2 v2.0.1
+require (
+	github.com/fatih/color v1.13.0
+	github.com/vartanbeno/go-reddit/v2 v2.0.1
+)
 
 require (
-	github.com/fatih/color v1.13.0 // indirect
 	github.com/golang/protobuf v1.2.0 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.1.9 // indirect
