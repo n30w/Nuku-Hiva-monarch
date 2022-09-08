@@ -118,13 +118,13 @@ func main() {
 
 	// Print out saved posts
 	{
-		title := color.New(color.BgHiYellow)
+		title := color.New(color.FgHiYellow)
 		link := color.New(color.FgCyan)
 
 		for _, post := range saved {
-			title.Printf("%s", post.Title)
+			title.Printf("[%s]", post.Title)
 			fmt.Print(" | ")
-			link.Printf("%s\n", post.URL)
+			link.Printf("(%s)\n", post.URL)
 		}
 		fmt.Println("============================")
 		// for _, post := range mySavedComments {
