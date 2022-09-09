@@ -15,11 +15,8 @@ import (
 
 func main() {
 
-	/*
-		Retrieves credentials from text file. This is only kept locally.
-		Also, its pretty bad to keep this kind of information in plain text.
-		Don't do that.
-	*/
+	// Retrieves credentials from txt file. Please figure out a
+	// way to encrypt this info. Thanks.
 	credentials := func() reddit.Credentials {
 
 		line := 0
@@ -65,13 +62,17 @@ func main() {
 		}
 	}()
 
+	fmt.Println("Credentials retrieved!")
+
 	var ctx = context.Background()
 
 	// Establish connection to Reddit API
 	httpClient := &http.Client{Timeout: time.Second * 30}
 	client, _ := reddit.NewClient(credentials, reddit.WithHTTPClient(httpClient))
 
-	saved, err := func() ([]reddit.Post, error) {
+	fmt.Println("Contacting Reddit API...")
+
+	savedPosts, savedComments, err := func() ([]reddit.Post, []reddit.Comment, error) {
 		opts := reddit.ListUserOverviewOptions{
 			ListOptions: reddit.ListOptions{
 				Limit:  100,
@@ -84,33 +85,44 @@ func main() {
 
 		// Returns for client.User.Saved method
 		var mySavedPosts []*reddit.Post
-		// var mySavedComments []*reddit.Comment
+		var mySavedComments []*reddit.Comment
 		var response *reddit.Response
 		var err error
-		// All saved posts
-		allSaved := []reddit.Post{}
 
+		// Function return values
+		allSavedPosts := []reddit.Post{}
+		allSavedComments := []reddit.Comment{}
+
+		// Loading dots
+		loadingDots := [3]string{".", "..", "..."}
+		const ClearLine = "\033[2K"
 		// Reddit's API total request limit for saved posts
 		totalRequestLimit := 1000 / 100 // The 100 is for Limit
 
 		for i := 0; i < totalRequestLimit; i++ {
 			// Retrieved saved posts; comments
-			mySavedPosts, _, response, err = client.User.Saved(ctx, &opts)
+			mySavedPosts, mySavedComments, response, err = client.User.Saved(ctx, &opts)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
+			fmt.Print(ClearLine)
+			fmt.Printf("\r")
+			fmt.Printf("Pulling saves%s", loadingDots[i%3])
 
-			fmt.Println("Save pull in progress...")
 			for _, post := range mySavedPosts {
-				allSaved = append(allSaved, *post)
+				allSavedPosts = append(allSavedPosts, *post)
+			}
+			for _, comment := range mySavedComments {
+				allSavedComments = append(allSavedComments, *comment)
 			}
 
 			// Update ListOptions.After
 			opts.ListOptions.After = response.After
 			time.Sleep(1 * time.Second) // Its recommend to only hit Reddit with 1 request/sec
+
 		}
 
-		return allSaved, err
+		return allSavedPosts, allSavedComments, err
 	}()
 	if err != nil {
 		return
@@ -118,26 +130,28 @@ func main() {
 
 	// Print out saved posts
 	{
-		title := color.New(color.FgHiYellow)
+		title := color.New(color.FgHiGreen)
 		link := color.New(color.FgCyan)
-
-		for _, post := range saved {
-			title.Printf("[%s]", post.Title)
-			fmt.Print(" | ")
-			link.Printf("(%s)\n", post.URL)
+		subreddit := color.New(color.FgHiRed)
+		fmt.Println("")
+		for _, post := range savedPosts {
+			title.Printf("\n# %s", post.Title)
+			fmt.Print(" in ")
+			subreddit.Printf("%s\n", post.SubredditName)
+			link.Printf("- %s\n- %s\n", post.Permalink, post.URL)
 		}
-		fmt.Println("============================")
-		// for _, post := range mySavedComments {
-		// 	author.Printf("%s ", post.Author)
-		// 	fmt.Print("in")
-		// 	subredditName.Printf(" %s ", post.SubredditName)
-		// 	fmt.Print("@")
-		// 	commentLink.Printf(" %s\n", post.PostPermalink)
-		// 	fmt.Printf("%s\n\n", post.Body)
-		// }
+
+		fmt.Println("===========================\n")
+
+		author := color.New(color.FgHiGreen)
+
+		for _, comment := range savedComments {
+			author.Printf("\n@%s", comment.Author)
+			fmt.Print(" in ")
+			subreddit.Printf("%s\n", comment.SubredditName)
+			fmt.Printf("%s\n", comment.Body)
+			fmt.Printf("\n%s\n", comment.Permalink)
+		}
 	}
 
 }
-
-// TODO send custom JSON request to reddit to display more than 100 saved posts
-// https://old.reddit.com/r/redditdev/comments/d7egb/how_to_get_more_json_results_i_get_only_30/
