@@ -155,3 +155,6 @@ func main() {
 	}
 
 }
+
+// TODO: Figure out database solution
+// TODO: Figure out cryptography solution
