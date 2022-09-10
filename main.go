@@ -93,11 +93,12 @@ func main() {
 		allSavedPosts := []reddit.Post{}
 		allSavedComments := []reddit.Comment{}
 
-		// Loading dots
-		loadingDots := [3]string{".", "..", "..."}
-		const ClearLine = "\033[2K"
 		// Reddit's API total request limit for saved posts
 		totalRequestLimit := 1000 / 100 // The 100 is for Limit
+
+		// Loading dots
+		loadingDots := [3]string{".", "..", "..."}
+		const ClearLine = "\033[2K" // Line clear ASCII code
 
 		for i := 0; i < totalRequestLimit; i++ {
 			// Retrieved saved posts; comments
@@ -156,5 +157,6 @@ func main() {
 
 }
 
+// TODO: GoRoutines for pulling from Reddit
 // TODO: Figure out database solution
 // TODO: Figure out cryptography solution
