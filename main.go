@@ -142,7 +142,7 @@ func main() {
 			link.Printf("- %s\n- %s\n", post.Permalink, post.URL)
 		}
 
-		fmt.Println("===========================\n")
+		fmt.Println("===========================")
 
 		author := color.New(color.FgHiGreen)
 
