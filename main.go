@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/theckman/yacspin"
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
@@ -62,15 +63,30 @@ func main() {
 		}
 	}()
 
-	fmt.Println("Credentials retrieved!")
+	fmt.Println("Credentials retrieved from file")
 
 	var ctx = context.Background()
 
 	// Establish connection to Reddit API
 	httpClient := &http.Client{Timeout: time.Second * 30}
-	client, _ := reddit.NewClient(credentials, reddit.WithHTTPClient(httpClient))
+	client, err := reddit.NewClient(credentials, reddit.WithHTTPClient(httpClient))
 
-	fmt.Println("Contacting Reddit API...")
+	if err != nil {
+		fmt.Println("Login failed :(")
+		return
+	} else {
+		fmt.Println("Contacting Reddit API...")
+	}
+
+	spinner, _ := yacspin.New(yacspin.Config{
+		Frequency:       100 * time.Millisecond,
+		CharSet:         yacspin.CharSets[43],
+		Suffix:          " retrieving posts",
+		SuffixAutoColon: true,
+		Message:         "", // Set this to the page "after" setting from struct
+		StopCharacter:   "✓",
+		StopColors:      []string{"fgGreen"},
+	})
 
 	savedPosts, savedComments, err := func() ([]reddit.Post, []reddit.Comment, error) {
 		opts := reddit.ListUserOverviewOptions{
@@ -92,23 +108,15 @@ func main() {
 		// Function return values
 		allSavedPosts := []reddit.Post{}
 		allSavedComments := []reddit.Comment{}
+		totalRequestLimit := 1000 / 100 // Reddit only caches 1000 posts
 
-		// Reddit's API total request limit for saved posts
-		totalRequestLimit := 1000 / 100 // The 100 is for Limit
-
-		// Loading dots
-		loadingDots := [3]string{".", "..", "..."}
-		const ClearLine = "\033[2K" // Line clear ASCII code
-
+		spinner.Start()
 		for i := 0; i < totalRequestLimit; i++ {
 			// Retrieved saved posts; comments
 			mySavedPosts, mySavedComments, response, err = client.User.Saved(ctx, &opts)
 			if err != nil {
 				return nil, nil, err
 			}
-			fmt.Print(ClearLine)
-			fmt.Printf("\r")
-			fmt.Printf("Pulling saves%s", loadingDots[i%3])
 
 			for _, post := range mySavedPosts {
 				allSavedPosts = append(allSavedPosts, *post)
@@ -117,18 +125,19 @@ func main() {
 				allSavedComments = append(allSavedComments, *comment)
 			}
 
+			spinner.Message(opts.ListOptions.After)
+
 			// Update ListOptions.After
 			opts.ListOptions.After = response.After
 			time.Sleep(1 * time.Second) // Its recommend to only hit Reddit with 1 request/sec
 
 		}
-
+		spinner.Stop()
 		return allSavedPosts, allSavedComments, err
 	}()
 	if err != nil {
 		return
 	}
-
 	// Print out saved posts
 	{
 		title := color.New(color.FgHiGreen)
