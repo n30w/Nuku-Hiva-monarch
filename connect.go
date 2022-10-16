@@ -15,20 +15,10 @@ func GetDatabase() (*sql.DB, error) {
 	return db, err
 }
 
-func Connect() {
-	db, err := GetDatabase()
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-	if err := db.Ping(); err != nil {
-		panic(err)
-	}
-	fmt.Println("Successfully connected to PlanetScale!")
-
+func Connect(db *sql.DB) {
 	var title string
 	id := 2
-	err = db.QueryRow("SELECT name FROM posts WHERE id = ?", id).Scan(&title)
+	err := db.QueryRow("SELECT name FROM posts WHERE id = ?", id).Scan(&title)
 	if err == sql.ErrNoRows {
 		log.Fatal("no rows returned")
 	} else if err != nil {
@@ -37,14 +27,32 @@ func Connect() {
 	fmt.Println(title)
 }
 
-func retrieveBy[T Col](db *sql.DB, table *Table, retrieval, want *T) T {
-	q := "SELECT " + string(retrieval) + " FROM " + table + " WHERE " + want
-
-	err := db.QueryRow(q).Scan(&retrieval)
-	if err == sql.ErrNoRows {
-		log.Fatal("no rows returned")
-	} else if err != nil {
-		log.Fatal(err)
-	}
-	return *retrieval
+// https://golangbot.com/mysql-create-table-insert-row/
+func UploadDataToPlanetScale(db *sql.DB, p []*Post, c []*Comment) {
+	s := ""
+	result, err := db.Exec(s)
 }
+
+// // Insert data into table
+// func Insert[T Col](db *sql.DB, table *Table) error {
+// 	q := "INSERT INTO " + table.Name + " "
+
+// 	switch table.Name {
+// 	case "posts":
+// 		q += "posts"
+// 		ferry := &Post{}
+// 	case "comments":
+// 		q += "comments"
+// 		ferry := &Comment{}
+// 	default:
+// 		return errors.New("Not a valid table!")
+// 	}
+
+// 	result, err := db.Exec("INSERT INTO customers (name) VALUES (?)", "Alice")
+
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	return nil
+// }

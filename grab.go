@@ -9,12 +9,14 @@ import (
 	"os"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/theckman/yacspin"
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
-func Grab() {
+func ReadRedditData() ([]*Post, []*Comment) {
+
+	posts := make([]*Post, 0)
+	comments := make([]*Comment, 0)
 
 	// Retrieves credentials from txt file. Please figure out a
 	// way to encrypt this info. Thanks.
@@ -73,7 +75,7 @@ func Grab() {
 
 	if err != nil {
 		fmt.Println("Login failed :(")
-		return
+		return nil, nil
 	} else {
 		fmt.Println("Contacting Reddit API...")
 	}
@@ -88,57 +90,93 @@ func Grab() {
 		StopColors:      []string{"fgGreen"},
 	})
 
-	savedPosts, savedComments, err := func() ([]reddit.Post, []reddit.Comment, error) {
-		opts := reddit.ListUserOverviewOptions{
-			ListOptions: reddit.ListOptions{
-				Limit:  100,
-				After:  "",
-				Before: "",
-			},
-			Sort: "new",
-			Time: "all",
-		}
-
-		// Returns for client.User.Saved method
-		var mySavedPosts []*reddit.Post
-		var mySavedComments []*reddit.Comment
-		var response *reddit.Response
-		var err error
-
-		// Function return values
-		allSavedPosts := []reddit.Post{}
-		allSavedComments := []reddit.Comment{}
-		totalRequestLimit := 1000 / 100 // Reddit only caches 1000 posts
-
-		spinner.Start()
-		for i := 0; i < totalRequestLimit; i++ {
-			// Retrieved saved posts; comments
-			mySavedPosts, mySavedComments, response, err = client.User.Saved(ctx, &opts)
-			if err != nil {
-				return nil, nil, err
-			}
-
-			for _, post := range mySavedPosts {
-				allSavedPosts = append(allSavedPosts, *post)
-			}
-			for _, comment := range mySavedComments {
-				allSavedComments = append(allSavedComments, *comment)
-			}
-
-			spinner.Message(opts.ListOptions.After)
-
-			// Update ListOptions.After
-			opts.ListOptions.After = response.After
-			time.Sleep(1 * time.Second) // Its recommend to only hit Reddit with 1 request/sec
-
-		}
-		spinner.Stop()
-		return allSavedPosts, allSavedComments, err
-	}()
-	if err != nil {
-		return
+	opts := reddit.ListUserOverviewOptions{
+		ListOptions: reddit.ListOptions{
+			Limit:  100,
+			After:  "",
+			Before: "",
+		},
+		Sort: "new",
+		Time: "all",
 	}
-	// Print out saved posts
+
+	// Returns for client.User.Saved method
+	var mySavedPosts []*reddit.Post
+	var mySavedComments []*reddit.Comment
+	var response *reddit.Response
+
+	totalRequestLimit := 1000 / 100 // Reddit only caches 1000 posts
+
+	// Counters to keep track of current position in inner loops
+	var postCounter, commentCounter id
+
+	spinner.Start()
+	for i := 0; i < totalRequestLimit; i++ {
+		// Retrieved saved posts; comments
+		mySavedPosts, mySavedComments, response, err = client.User.Saved(ctx, &opts)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, post := range mySavedPosts {
+			// allSavedPosts = append(allSavedPosts, *post)
+			posts = append(posts, &Post{
+				Name:      name(post.Title),
+				URL:       url(post.Permalink),
+				Subreddit: subreddit(post.SubredditName),
+				MediaURL:  mediaUrl(post.URL),
+			})
+			postCounter++
+		}
+
+		for _, comment := range mySavedComments {
+			// allSavedComments = append(allSavedComments, *comment)
+			comments = append(comments, &Comment{
+				Author:    author(comment.Author),
+				Body:      body(comment.Body),
+				URL:       url(comment.Permalink),
+				Subreddit: subreddit(comment.SubredditName),
+			})
+			commentCounter++
+		}
+
+		spinner.Message(opts.ListOptions.After)
+
+		// Update ListOptions.After
+		opts.ListOptions.After = response.After
+		time.Sleep(1 * time.Second) // Its recommend to hit Reddit with only 1 request/sec
+
+	}
+
+	lenPosts := len(posts)
+	lenComments := len(comments)
+
+	// Populate post IDs
+	for i, post := range posts {
+		post.Id = id(lenPosts - i)
+	}
+
+	// Populate comment IDs
+	for i, comment := range comments {
+		comment.Id = id(lenComments - i)
+	}
+
+	spinner.Stop()
+	fmt.Println("Saved posts and comments retrieved")
+	if err != nil {
+		fmt.Println(err)
+		return nil, nil
+	}
+
+	return posts, comments
+}
+
+// TODO: GoRoutines for pulling from Reddit
+// TODO: Figure out cryptography solution
+
+/*
+
+//Print out saved posts
 	{
 		title := color.New(color.FgHiGreen)
 		link := color.New(color.FgCyan)
@@ -164,8 +202,6 @@ func Grab() {
 		}
 	}
 
-}
 
-// TODO: GoRoutines for pulling from Reddit
-// TODO: Figure out database solution
-// TODO: Figure out cryptography solution
+
+*/
