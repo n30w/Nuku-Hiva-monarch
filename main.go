@@ -22,11 +22,16 @@ func init() {
 
 func main() {
 
-	x, _ := ReadRedditData()
+	posts, comments := ReadRedditData()
 
-	for _, a := range x {
-		fmt.Printf("%d    %s\n", a.Id, a.Name)
+	for _, i := range posts.Rows {
+		fmt.Printf("%d %s %s \n", i.Col1, i.Col2, i.Col3)
 	}
+
+	for _, i := range comments.Rows {
+		fmt.Printf("%d %s %s \n", i.Col1, i.Col2, i.Col3)
+	}
+
 	// API FUNCTIONS
 	//
 	// MASS REFRESH:

@@ -8,40 +8,33 @@ import (
 	"strconv"
 )
 
-type Table struct {
+type text string
+type id uint64
+
+type Table[T Row[id, text]] struct {
 	Name string
+	Rows []*T
+}
+
+// Different types of rows of different tables
+type Rows interface {
+	[]*Row[id, text]
 }
 
 // A column can either be an int or a string. Ints are for IDs.
 type Col interface {
-	uint64 | string
+	id | text
 }
 
-type id uint64
-type author string
-type body string
-type url string
-type subreddit string
-type mediaUrl string
-type name string
-
-type Post struct {
-	Id        id
-	Name      name
-	URL       url
-	Subreddit subreddit
-	MediaURL  mediaUrl
+type Row[I id, T text] struct {
+	Col1 I
+	Col2 T
+	Col3 T
+	Col4 T
+	Col5 T
 }
 
-type Comment struct {
-	Id        id
-	Author    author
-	Body      body
-	URL       url
-	Subreddit subreddit
-}
-
-func RetrieveBy[T Col](db *sql.DB, table *Table, retrieval, want *T) T {
+func RetrieveBy[T Col](db *sql.DB, table *Table[Row[id, text]], retrieval, want *T) T {
 	q := "SELECT " + ToString(retrieval) + " FROM " + table.Name + " WHERE " + ToString(want)
 
 	err := db.QueryRow(q).Scan(&retrieval)

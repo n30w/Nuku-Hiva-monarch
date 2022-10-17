@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
+	"strings"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql" // The underscore on imports autoloads the dependency. Do not need to call something like "godotenv.Load()"
 	_ "github.com/joho/godotenv/autoload"
@@ -28,31 +32,66 @@ func Connect(db *sql.DB) {
 }
 
 // https://golangbot.com/mysql-create-table-insert-row/
-func UploadDataToPlanetScale(db *sql.DB, p []*Post, c []*Comment) {
-	s := ""
-	result, err := db.Exec(s)
+
+func InsertToSQL(db *sql.DB, table *Table[Row[id, text]]) error {
+
+	var query string
+	var inserts []string
+	var params []interface{}
+	insertion := "(?, ?, ?, ?, ?)"
+
+	switch table.Name {
+	case "posts":
+		query = "INSERT INTO posts (id, name, url, subreddit, media_url) VALUES "
+	case "comments":
+		query = "INSERT INTO comments (id, author, body, url, subreddit) VALUES "
+	default:
+		errors.New("Not a valid table name!")
+	}
+
+	for _, v := range table.Rows {
+		inserts = append(inserts, insertion)
+		params = append(
+			params,
+			v.Col1,
+			v.Col2,
+			v.Col3,
+			v.Col4,
+			v.Col5,
+		)
+	}
+
+	qv := strings.Join(inserts, ",")
+
+	query += qv
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+
+	defer cancelFunc()
+
+	statement, err := db.PrepareContext(ctx, query)
+
+	if err != nil {
+		log.Printf("Error %s when preparing SQL statement", err)
+		return err
+	}
+
+	defer statement.Close()
+
+	res, err := statement.ExecContext(ctx, params...)
+	if err != nil {
+		log.Printf("Error %s when inserting row into products table", err)
+		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		log.Printf("Error %s when finding rows affected", err)
+		return err
+	}
+
+	log.Printf("%d post rows created ", rows)
+	fmt.Printf("%d post rows created", rows)
+
+	return nil
 }
-
-// // Insert data into table
-// func Insert[T Col](db *sql.DB, table *Table) error {
-// 	q := "INSERT INTO " + table.Name + " "
-
-// 	switch table.Name {
-// 	case "posts":
-// 		q += "posts"
-// 		ferry := &Post{}
-// 	case "comments":
-// 		q += "comments"
-// 		ferry := &Comment{}
-// 	default:
-// 		return errors.New("Not a valid table!")
-// 	}
-
-// 	result, err := db.Exec("INSERT INTO customers (name) VALUES (?)", "Alice")
-
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-
-// 	return nil
-// }

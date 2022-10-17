@@ -13,10 +13,16 @@ import (
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
-func ReadRedditData() ([]*Post, []*Comment) {
+func ReadRedditData() (*Table[Row[id, text]], *Table[Row[id, text]]) {
 
-	posts := make([]*Post, 0)
-	comments := make([]*Comment, 0)
+	// posts := make([]*Post, 0)
+	// comments := make([]*Comment, 0)
+
+	postsTable := &Table[Row[id, text]]{}
+	commentsTable := &Table[Row[id, text]]{}
+
+	postsTable.Name = "posts"
+	commentsTable.Name = "comments"
 
 	// Retrieves credentials from txt file. Please figure out a
 	// way to encrypt this info. Thanks.
@@ -119,23 +125,23 @@ func ReadRedditData() ([]*Post, []*Comment) {
 		}
 
 		for _, post := range mySavedPosts {
-			// allSavedPosts = append(allSavedPosts, *post)
-			posts = append(posts, &Post{
-				Name:      name(post.Title),
-				URL:       url(post.Permalink),
-				Subreddit: subreddit(post.SubredditName),
-				MediaURL:  mediaUrl(post.URL),
+			postsTable.Rows = append(postsTable.Rows, &Row[id, text]{
+				0,
+				text(post.Title),
+				text(post.Permalink),
+				text(post.SubredditName),
+				text(post.URL),
 			})
 			postCounter++
 		}
 
 		for _, comment := range mySavedComments {
-			// allSavedComments = append(allSavedComments, *comment)
-			comments = append(comments, &Comment{
-				Author:    author(comment.Author),
-				Body:      body(comment.Body),
-				URL:       url(comment.Permalink),
-				Subreddit: subreddit(comment.SubredditName),
+			commentsTable.Rows = append(commentsTable.Rows, &Row[id, text]{
+				0,
+				text(comment.Author),
+				text(comment.Body),
+				text(comment.Permalink),
+				text(comment.SubredditName),
 			})
 			commentCounter++
 		}
@@ -148,17 +154,17 @@ func ReadRedditData() ([]*Post, []*Comment) {
 
 	}
 
-	lenPosts := len(posts)
-	lenComments := len(comments)
+	lenPosts := len(postsTable.Rows)
+	lenComments := len(commentsTable.Rows)
 
 	// Populate post IDs
-	for i, post := range posts {
-		post.Id = id(lenPosts - i)
+	for i, post := range postsTable.Rows {
+		post.Col1 = id(lenPosts - i)
 	}
 
 	// Populate comment IDs
-	for i, comment := range comments {
-		comment.Id = id(lenComments - i)
+	for i, comment := range commentsTable.Rows {
+		comment.Col1 = id(lenComments - i)
 	}
 
 	spinner.Stop()
@@ -168,7 +174,7 @@ func ReadRedditData() ([]*Post, []*Comment) {
 		return nil, nil
 	}
 
-	return posts, comments
+	return postsTable, commentsTable
 }
 
 // TODO: GoRoutines for pulling from Reddit
