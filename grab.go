@@ -179,35 +179,3 @@ func ReadRedditData() (*Table[Row[id, text]], *Table[Row[id, text]]) {
 
 // TODO: GoRoutines for pulling from Reddit
 // TODO: Figure out cryptography solution
-
-/*
-
-//Print out saved posts
-	{
-		title := color.New(color.FgHiGreen)
-		link := color.New(color.FgCyan)
-		subreddit := color.New(color.FgHiRed)
-		fmt.Println("")
-		for _, post := range savedPosts {
-			title.Printf("\n# %s", post.Title)
-			fmt.Print(" in ")
-			subreddit.Printf("%s\n", post.SubredditName)
-			link.Printf("- %s\n- %s\n", post.Permalink, post.URL)
-		}
-
-		fmt.Println("===========================")
-
-		author := color.New(color.FgHiGreen)
-
-		for _, comment := range savedComments {
-			author.Printf("\n@%s", comment.Author)
-			fmt.Print(" in ")
-			subreddit.Printf("%s\n", comment.SubredditName)
-			fmt.Printf("%s\n", comment.Body)
-			fmt.Printf("\n%s\n", comment.Permalink)
-		}
-	}
-
-
-
-*/

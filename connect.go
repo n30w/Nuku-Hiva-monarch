@@ -4,9 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
-	"os"
 	"strings"
 	"time"
 
@@ -14,26 +12,22 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func GetDatabase() (*sql.DB, error) {
-	db, err := sql.Open("mysql", os.Getenv("DSN"))
-	return db, err
+type DBModel interface {
+	UpdateSQL(table *Table[Row[id, text]]) error
+	InsertToSQL(table *Table[Row[id, text]]) error
 }
 
-func Connect(db *sql.DB) {
-	var title string
-	id := 2
-	err := db.QueryRow("SELECT name FROM posts WHERE id = ?", id).Scan(&title)
-	if err == sql.ErrNoRows {
-		log.Fatal("no rows returned")
-	} else if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(title)
+type PlanetscaleDB struct {
+	*sql.DB
 }
 
-// https://golangbot.com/mysql-create-table-insert-row/
+// UpdateSQL updates table rows for any changes
+func (p *PlanetscaleDB) UpdateSQL(table *Table[Row[id, text]]) error {
+	return nil
+}
 
-func InsertToSQL(db *sql.DB, table *Table[Row[id, text]]) error {
+// InsertToSql uploads table data to SQL
+func (p *PlanetscaleDB) InsertToSQL(table *Table[Row[id, text]]) error {
 
 	var query string
 	var inserts []string
@@ -46,7 +40,7 @@ func InsertToSQL(db *sql.DB, table *Table[Row[id, text]]) error {
 	case "comments":
 		query = "INSERT INTO comments (id, author, body, url, subreddit) VALUES "
 	default:
-		errors.New("Not a valid table name!")
+		return errors.New("not a valid table name")
 	}
 
 	for _, v := range table.Rows {
@@ -69,7 +63,7 @@ func InsertToSQL(db *sql.DB, table *Table[Row[id, text]]) error {
 
 	defer cancelFunc()
 
-	statement, err := db.PrepareContext(ctx, query)
+	statement, err := p.PrepareContext(ctx, query)
 
 	if err != nil {
 		log.Printf("Error %s when preparing SQL statement", err)
@@ -85,13 +79,13 @@ func InsertToSQL(db *sql.DB, table *Table[Row[id, text]]) error {
 	}
 
 	rows, err := res.RowsAffected()
+
 	if err != nil {
 		log.Printf("Error %s when finding rows affected", err)
 		return err
 	}
 
-	log.Printf("%d post rows created ", rows)
-	fmt.Printf("%d post rows created", rows)
+	log.Printf("\n%d rows created ", rows)
 
 	return nil
 }
