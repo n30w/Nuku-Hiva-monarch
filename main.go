@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"log"
 	"os"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -14,33 +15,22 @@ func main() {
 	}
 	defer db.Close()
 
-	// psdb := &PlanetscaleDB{db}
-
 	if err := db.Ping(); err != nil {
 		panic(err)
 	}
 
 	key := &Key{}
-
 	posts := &Table[Row[id, text]]{Name: "posts"}
 	comments := &Table[Row[id, text]]{Name: "comments"}
 
 	ReadAllRedditSaved(posts, comments, key)
 
-	posts.List()
-	comments.List()
+	psdb := &PlanetscaleDB{db}
+	err = psdb.InsertToSQL(posts)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-	// {
-	// 	err = psdb.InsertToSQL(posts)
-	// 	if err != nil {
-	// 		log.Fatalln(err)
-	// 	}
-
-	// 	err = psdb.InsertToSQL(comments)
-	// 	if err != nil {
-	// 		log.Fatalln(err)
-	// 	}
-	// }
 	// API FUNCTIONS
 	//
 	// MASS REFRESH:

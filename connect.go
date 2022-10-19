@@ -5,11 +5,26 @@ import (
 	"database/sql"
 	"errors"
 	"log"
+	"os"
 	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql" // The underscore on imports autoloads the dependency. Do not need to call something like "godotenv.Load()"
+	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
+
+// Key represents credentials used to login to APIs
+type Key struct{}
+
+// NewKey returns a new key given environment variables
+func (k *Key) NewKey() *reddit.Credentials {
+	return &reddit.Credentials{
+		ID:       os.Getenv("ID"),
+		Secret:   os.Getenv("SECRET"),
+		Username: os.Getenv("USERNAME"),
+		Password: os.Getenv("PASSWORD"),
+	}
+}
 
 type DBModel interface {
 	UpdateSQL(table *Table[Row[id, text]]) error
@@ -42,15 +57,18 @@ func (p *PlanetscaleDB) InsertToSQL(table *Table[Row[id, text]]) error {
 		return errors.New("not a valid table name")
 	}
 
-	for _, v := range table.Rows {
+	for _, row := range table.Rows {
+		if row == nil {
+			break
+		}
 		inserts = append(inserts, insertion)
 		params = append(
 			params,
-			v.Col1,
-			v.Col2,
-			v.Col3,
-			v.Col4,
-			v.Col5,
+			row.Col1,
+			row.Col2,
+			row.Col3,
+			row.Col4,
+			row.Col5,
 		)
 	}
 
