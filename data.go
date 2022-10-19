@@ -41,7 +41,7 @@ func (t *Table[T]) List() {
 		if row == nil {
 			break
 		}
-		fmt.Println(row)
+		fmt.Println(*row)
 	}
 }
 
