@@ -1,6 +1,6 @@
-package main
-
 // Package for anything that handles data
+
+package main
 
 import (
 	"fmt"
@@ -29,11 +29,13 @@ type Row[I id, T text] struct {
 	Col5 T
 }
 
+// Table represents an SQL table: it has a name and rows
 type Table[T Row[id, text]] struct {
 	Name string
 	Rows []*T
 }
 
+// List prints out slice items to console
 func (t *Table[T]) List() {
 	for _, v := range t.Rows {
 		fmt.Println(*v)

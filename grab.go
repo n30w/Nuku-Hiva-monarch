@@ -12,32 +12,31 @@ import (
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
-func ReadAllRedditSaved() (*Table[Row[id, text]], *Table[Row[id, text]]) {
+// Key represents credentials used to login to APIs
+type Key struct{}
 
-	postsTable := &Table[Row[id, text]]{}
-	commentsTable := &Table[Row[id, text]]{}
-
-	postsTable.Name = "posts"
-	commentsTable.Name = "comments"
-
-	credentials := reddit.Credentials{
+// NewKey returns a new key given environment variables
+func (k *Key) NewKey() *reddit.Credentials {
+	return &reddit.Credentials{
 		ID:       os.Getenv("ID"),
 		Secret:   os.Getenv("SECRET"),
 		Username: os.Getenv("USERNAME"),
 		Password: os.Getenv("PASSWORD"),
 	}
+}
 
-	fmt.Println("Credentials retrieved from file")
+// ReadAllRedditSaved reads all cached posts on the Reddit account.
+// This can be used to mass refresh an entire SQL database.
+func ReadAllRedditSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 
-	var ctx = context.Background()
+	ctx := context.Background()
 
 	// Establish connection to Reddit API
 	httpClient := &http.Client{Timeout: time.Second * 30}
-	client, err := reddit.NewClient(credentials, reddit.WithHTTPClient(httpClient))
+	client, err := reddit.NewClient(*key.NewKey(), reddit.WithHTTPClient(httpClient))
 
 	if err != nil {
-		fmt.Println("Login failed :(")
-		return nil, nil
+		log.Println("Login failed :(")
 	} else {
 		fmt.Println("Contacting Reddit API...")
 	}
@@ -107,7 +106,6 @@ func ReadAllRedditSaved() (*Table[Row[id, text]], *Table[Row[id, text]]) {
 		// Update ListOptions.After
 		opts.ListOptions.After = response.After
 		time.Sleep(1 * time.Second) // Its recommend to hit Reddit with only 1 request/sec
-
 	}
 
 	lenPosts := len(postsTable.Rows)
@@ -126,13 +124,12 @@ func ReadAllRedditSaved() (*Table[Row[id, text]], *Table[Row[id, text]]) {
 	spinner.Stop()
 	fmt.Println("Saved posts and comments retrieved")
 	if err != nil {
-		fmt.Println(err)
-		return nil, nil
+		log.Println(err)
 	}
-
-	return postsTable, commentsTable
 }
 
+// ReadRecentRedditSaved reads up to the most recent 25 saved items.
+// It drops local table rows.
 func ReadRecentRedditSaved() {
 
 }

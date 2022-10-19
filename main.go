@@ -20,7 +20,12 @@ func main() {
 		panic(err)
 	}
 
-	posts, comments := ReadAllRedditSaved()
+	key := &Key{}
+
+	posts := &Table[Row[id, text]]{Name: "posts"}
+	comments := &Table[Row[id, text]]{Name: "comments"}
+
+	ReadAllRedditSaved(posts, comments, key)
 
 	posts.List()
 	comments.List()
