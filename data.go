@@ -3,6 +3,7 @@ package main
 // Package for anything that handles data
 
 import (
+	"fmt"
 	"strconv"
 )
 
@@ -31,6 +32,12 @@ type Row[I id, T text] struct {
 type Table[T Row[id, text]] struct {
 	Name string
 	Rows []*T
+}
+
+func (t *Table[T]) List() {
+	for _, v := range t.Rows {
+		fmt.Println(*v)
+	}
 }
 
 func ToString(t any) string {

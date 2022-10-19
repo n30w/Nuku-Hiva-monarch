@@ -9,7 +9,6 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql" // The underscore on imports autoloads the dependency. Do not need to call something like "godotenv.Load()"
-	_ "github.com/joho/godotenv/autoload"
 )
 
 type DBModel interface {

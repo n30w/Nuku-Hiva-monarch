@@ -2,8 +2,9 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"os"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
@@ -18,23 +19,23 @@ func main() {
 	if err := db.Ping(); err != nil {
 		panic(err)
 	}
-	fmt.Println("Successfully connected to PlanetScale!")
 
-	posts, _ := ReadRedditData()
+	posts, comments := ReadAllRedditSaved()
 
-	for _, i := range posts.Rows {
-		fmt.Printf("%d %s %s \n", i.Col1, i.Col2, i.Col3)
-	}
+	posts.List()
+	comments.List()
 
-	// for _, i := range comments.Rows {
-	// 	fmt.Printf("%d %s %s \n", i.Col1, i.Col2, i.Col3)
+	// {
+	// 	err = psdb.InsertToSQL(posts)
+	// 	if err != nil {
+	// 		log.Fatalln(err)
+	// 	}
+
+	// 	err = psdb.InsertToSQL(comments)
+	// 	if err != nil {
+	// 		log.Fatalln(err)
+	// 	}
 	// }
-
-	// err = psdb.InsertToSQL(posts)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
 	// API FUNCTIONS
 	//
 	// MASS REFRESH:

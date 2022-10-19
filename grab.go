@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"log"
@@ -13,10 +12,7 @@ import (
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
-func ReadRedditData() (*Table[Row[id, text]], *Table[Row[id, text]]) {
-
-	// posts := make([]*Post, 0)
-	// comments := make([]*Comment, 0)
+func ReadAllRedditSaved() (*Table[Row[id, text]], *Table[Row[id, text]]) {
 
 	postsTable := &Table[Row[id, text]]{}
 	commentsTable := &Table[Row[id, text]]{}
@@ -24,52 +20,12 @@ func ReadRedditData() (*Table[Row[id, text]], *Table[Row[id, text]]) {
 	postsTable.Name = "posts"
 	commentsTable.Name = "comments"
 
-	// Retrieves credentials from txt file. Please figure out a
-	// way to encrypt this info. Thanks.
-	credentials := func() reddit.Credentials {
-
-		line := 0
-		c := [4]string{}
-
-		f, err := os.Open("credentials.txt")
-
-		if err != nil {
-			fmt.Println(err)
-			log.Fatal(err)
-		}
-
-		defer f.Close()
-
-		scanner := bufio.NewScanner(f)
-
-		for scanner.Scan() {
-			if line != 0 {
-				switch line {
-				case 1:
-					c[2] = scanner.Text()
-				case 2:
-					c[3] = scanner.Text()
-				case 3:
-					c[0] = scanner.Text()
-				case 4:
-					c[1] = scanner.Text()
-				}
-			}
-			line++
-		}
-
-		if err := scanner.Err(); err != nil {
-			fmt.Println(err)
-			log.Fatal(err)
-		}
-
-		return reddit.Credentials{
-			ID:       c[0],
-			Secret:   c[1],
-			Username: c[2],
-			Password: c[3],
-		}
-	}()
+	credentials := reddit.Credentials{
+		ID:       os.Getenv("ID"),
+		Secret:   os.Getenv("SECRET"),
+		Username: os.Getenv("USERNAME"),
+		Password: os.Getenv("PASSWORD"),
+	}
 
 	fmt.Println("Credentials retrieved from file")
 
@@ -89,7 +45,7 @@ func ReadRedditData() (*Table[Row[id, text]], *Table[Row[id, text]]) {
 	spinner, _ := yacspin.New(yacspin.Config{
 		Frequency:       100 * time.Millisecond,
 		CharSet:         yacspin.CharSets[43],
-		Suffix:          " retrieving posts",
+		Suffix:          " retrieving posts and comments",
 		SuffixAutoColon: true,
 		Message:         "", // Set this to the page "after" setting from struct
 		StopCharacter:   "✓",
@@ -121,7 +77,7 @@ func ReadRedditData() (*Table[Row[id, text]], *Table[Row[id, text]]) {
 		// Retrieved saved posts; comments
 		mySavedPosts, mySavedComments, response, err = client.User.Saved(ctx, &opts)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
 		}
 
 		for _, post := range mySavedPosts {
@@ -177,5 +133,6 @@ func ReadRedditData() (*Table[Row[id, text]], *Table[Row[id, text]]) {
 	return postsTable, commentsTable
 }
 
-// TODO: GoRoutines for pulling from Reddit
-// TODO: Figure out cryptography solution
+func ReadRecentRedditSaved() {
+
+}
