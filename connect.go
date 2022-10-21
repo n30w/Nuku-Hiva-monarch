@@ -35,20 +35,14 @@ type PlanetscaleDB struct {
 	*sql.DB
 }
 
-// UpdateSQL updates table rows for any changes
-func (p *PlanetscaleDB) UpdateSQL(table *Table[Row[id, text]]) error {
-	return nil
-}
-
-// InsertToSql uploads table data to SQL
-func (p *PlanetscaleDB) InsertToSQL(table *Table[Row[id, text]]) error {
-
+// InsertToSQL uploads table data to SQL
+func (p *PlanetscaleDB) InsertToSQL(tableName string, tableRows []*Row[id, text]) error {
 	var query string
 	var inserts []string
 	var params []interface{}
 	insertion := "(?, ?, ?, ?, ?)"
 
-	switch table.Name {
+	switch tableName {
 	case "posts":
 		query = "INSERT INTO posts (id, name, url, subreddit, media_url) VALUES "
 	case "comments":
@@ -57,7 +51,7 @@ func (p *PlanetscaleDB) InsertToSQL(table *Table[Row[id, text]]) error {
 		return errors.New("not a valid table name")
 	}
 
-	for _, row := range table.Rows {
+	for _, row := range tableRows {
 		if row == nil {
 			break
 		}
@@ -105,4 +99,91 @@ func (p *PlanetscaleDB) InsertToSQL(table *Table[Row[id, text]]) error {
 	log.Printf("\n%d rows created ", rows)
 
 	return nil
+}
+
+// RetrieveSQL stores the most recent 10 rows from a PlanetscaleDB table
+// into the parameterized table.
+func (p *PlanetscaleDB) RetrieveSQL(table *Table[Row[id, text]]) error {
+
+	rows, err := p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT 10")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	i := 0
+	for rows.Next() {
+		table.Rows[i] = &Row[id, text]{}
+		err := rows.Scan(
+			&table.Rows[i].Col1,
+			&table.Rows[i].Col2,
+			&table.Rows[i].Col3,
+			&table.Rows[i].Col4,
+			&table.Rows[i].Col5,
+		)
+		if err != nil {
+			return err
+		}
+		i++
+	}
+
+	if err = rows.Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateSQL compares a current table on the planetscaledb to a current saved table
+// from Reddit saved. Returns an integer from 0 to 10. If the returned
+// value is 0, that means no new rows need to be created on the
+// planetscale table.
+func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit *Table[Row[id, text]]) {
+
+	if planetscale.Name != reddit.Name {
+		log.Fatal("these databases are not the same")
+	}
+
+	entriesToAdd := 0
+	for i := 0; i < 10; i++ {
+		if planetscale.Rows[0].Col3 == reddit.Rows[i].Col3 {
+			entriesToAdd = i
+		}
+	}
+
+	if entriesToAdd == 0 {
+		log.Println("No new rows must be added to " + planetscale.Name)
+	} else {
+		lastID := p.GetLastID(planetscale.Name)
+		var nextID id
+		for i := 0; i < entriesToAdd; i++ {
+			nextID = lastID + id(i+1)
+			reddit.Rows[i].Col1 = nextID
+		}
+		p.InsertToSQL(planetscale.Name, reddit.Rows[0:entriesToAdd])
+	}
+
+}
+
+// GetLastID makes a query to the SQL database and returns the most latest ID
+func (p *PlanetscaleDB) GetLastID(name string) id {
+	rows, err := p.Query("SELECT MAX(id) FROM " + name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var max int
+	for rows.Next() {
+		err := rows.Scan(&max)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return id(max)
 }

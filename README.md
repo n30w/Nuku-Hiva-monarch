@@ -1,11 +1,14 @@
-# Nuku Hiva Monarch
+# Andthensome
 
-This project is named after a bird. Anyway, this gets my saved posts on Reddit and displays it on a website interface.
+Reddit only caches 1000 saved posts+comments. This is a problem if you keep saving posts and want to view your oldest ones.
+
+The name for this project is named "Andthensome", because it has the ability to retrieve all your Reddit posts, and then some, because it can retrieve any updates as well.
 
 ## TODO
 
+- [x] Store reddit credentials in .env file
+- [ ] SQL Comparison function
 - [ ] Use a docker container for API calls
-- [ ] Store reddit credentials in .env file
 
 ## Links
 

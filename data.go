@@ -39,6 +39,7 @@ type Table[T Row[id, text]] struct {
 func (t *Table[T]) List() {
 	for _, row := range t.Rows {
 		if row == nil {
+			fmt.Println("No rows in this table")
 			break
 		}
 		fmt.Println(*row)

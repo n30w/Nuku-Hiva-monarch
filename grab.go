@@ -11,11 +11,8 @@ import (
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
-// ReadAllRedditSaved reads all cached posts on the Reddit account.
-// This can be used to mass refresh an entire SQL database.
-func ReadAllRedditSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
-
-	spinner, _ := yacspin.New(yacspin.Config{
+var (
+	spinner, _ = yacspin.New(yacspin.Config{
 		Frequency:       100 * time.Millisecond,
 		CharSet:         yacspin.CharSets[43],
 		Suffix:          " retrieving posts and comments",
@@ -24,6 +21,11 @@ func ReadAllRedditSaved(postsTable, commentsTable *Table[Row[id, text]], key *Ke
 		StopCharacter:   "✓",
 		StopColors:      []string{"fgGreen"},
 	})
+)
+
+// ReadAllRedditSaved reads all cached posts on the Reddit account.
+// This can be used to mass refresh an entire SQL database.
+func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key, totalRequests int) {
 
 	var mySavedPosts []*reddit.Post
 	var mySavedComments []*reddit.Comment
@@ -33,7 +35,7 @@ func ReadAllRedditSaved(postsTable, commentsTable *Table[Row[id, text]], key *Ke
 	lastPos1 := 0
 	lastPos2 := 0
 
-	requests := 1000 / 100 // Reddit only caches 1000 posts
+	// requests := 1000 / 100 // Reddit only caches 1000 posts
 	ctx := context.Background()
 	opts := &reddit.ListUserOverviewOptions{
 		ListOptions: reddit.ListOptions{
@@ -57,7 +59,7 @@ func ReadAllRedditSaved(postsTable, commentsTable *Table[Row[id, text]], key *Ke
 
 	spinner.Start()
 
-	for i := 0; i < requests; i++ {
+	for i := 0; i < totalRequests; i++ {
 		mySavedPosts, mySavedComments, response, err = client.User.Saved(ctx, opts)
 		if err != nil {
 			log.Fatalln(err)
@@ -113,10 +115,4 @@ func ReadAllRedditSaved(postsTable, commentsTable *Table[Row[id, text]], key *Ke
 	if err != nil {
 		log.Println(err)
 	}
-}
-
-// ReadRecentRedditSaved reads up to the most recent 25 saved items.
-// It drops local table rows.
-func ReadRecentRedditSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
-
 }

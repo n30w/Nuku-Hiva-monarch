@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	db, err := sql.Open("mysql", os.Getenv("DSN"))
+	db, err := sql.Open("mysql", os.Getenv("DEV"))
 	if err != nil {
 		panic(err)
 	}
@@ -21,26 +21,23 @@ func main() {
 	}
 
 	key := &Key{}
-	posts := &Table[Row[id, text]]{Name: "posts"}
-	comments := &Table[Row[id, text]]{Name: "comments"}
+	redditPosts := &Table[Row[id, text]]{Name: "posts"}
+	dbPosts := &Table[Row[id, text]]{Name: "posts"}
+	redditComments := &Table[Row[id, text]]{Name: "comments"}
+	dbComments := &Table[Row[id, text]]{Name: "comments"}
 
-	ReadAllRedditSaved(posts, comments, key)
+	GrabSaved(redditPosts, redditComments, key, 1)
 
 	psdb := &PlanetscaleDB{db}
-	err = psdb.InsertToSQL(posts)
+	err = psdb.RetrieveSQL(dbPosts)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = psdb.RetrieveSQL(dbComments)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	// API FUNCTIONS
-	//
-	// MASS REFRESH:
-	// 1) Get data from Reddit
-	// 2) Store data into structs
-	// 3) Transfer struct data over to PlanetScale SQL database
-	//
-	// CONSISTENT UPDATES:
-	// 1) Get MOST RECENT saved posts from Reddit every 24 hours
-	// 2) Store data into structs
-	// 3) Transfer struct data over to PlanetScale SQL database
+	psdb.UpdateSQL(dbPosts, redditPosts)
+	psdb.UpdateSQL(dbComments, redditComments)
 }
