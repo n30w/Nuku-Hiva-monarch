@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	db, err := sql.Open("mysql", os.Getenv("DEV"))
+	env := "DEV"
+	db, err := sql.Open("mysql", os.Getenv(env))
 	if err != nil {
 		panic(err)
 	}

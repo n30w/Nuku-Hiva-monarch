@@ -7,17 +7,12 @@ The name for this project is named "Andthensome", because it has the ability to 
 ## TODO
 
 - [x] Store reddit credentials in .env file
-- [ ] SQL Comparison function
+- [x] SQL Comparison function
+- [ ] Setup webserver
 - [ ] Use a docker container for API calls
 
 ## Links
 
 - [How to get more JSON Results](https://old.reddit.com/r/redditdev/comments/d7egb/how_to_get_more_json_results_i_get_only_30/)
 - [SQL Go Create Table Insert Row](https://golangbot.com/mysql-create-table-insert-row/)
-
-## Planned Features
-
-- Add Vue and front-end support
-- Encryption of the link.txt file
-  - Must require a user set password during runtime
-- Database support for saved posts using MongoDB or that of the likes of SQL
+- [Go Docker Tutorial](https://tutorialedge.net/golang/go-docker-tutorial/)

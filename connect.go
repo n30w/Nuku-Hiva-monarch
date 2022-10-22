@@ -96,7 +96,7 @@ func (p *PlanetscaleDB) InsertToSQL(tableName string, tableRows []*Row[id, text]
 		return err
 	}
 
-	log.Printf("\n%d rows created ", rows)
+	log.Printf("\n%d rows created in %s", rows, tableName)
 
 	return nil
 }
@@ -134,10 +134,8 @@ func (p *PlanetscaleDB) RetrieveSQL(table *Table[Row[id, text]]) error {
 	return nil
 }
 
-// UpdateSQL compares a current table on the planetscaledb to a current saved table
-// from Reddit saved. Returns an integer from 0 to 10. If the returned
-// value is 0, that means no new rows need to be created on the
-// planetscale table.
+// UpdateSQL compares the planetscale table and the reddit table,
+// and updates the planetscale database accordingly.
 func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit *Table[Row[id, text]]) {
 
 	if planetscale.Name != reddit.Name {
@@ -162,7 +160,6 @@ func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit *Table[Row[id, text]]) {
 		}
 		p.InsertToSQL(planetscale.Name, reddit.Rows[0:entriesToAdd])
 	}
-
 }
 
 // GetLastID makes a query to the SQL database and returns the most latest ID
