@@ -8,8 +8,9 @@ The name for this project is named "Andthensome", because it has the ability to 
 
 - [x] Store reddit credentials in .env file
 - [x] SQL Comparison function
-- [ ] Setup webserver
-- [ ] Use a docker container for API calls
+- [x] Setup webserver
+- [x] Use a docker container for API calls
+- [ ] Log planetscale updates to webpage
 
 ## Links
 
