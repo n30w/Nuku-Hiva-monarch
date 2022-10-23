@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -12,6 +13,8 @@ import (
 	_ "github.com/go-sql-driver/mysql" // The underscore on imports autoloads the dependency. Do not need to call something like "godotenv.Load()"
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
+
+const rowsToRetrieve = 10
 
 // Key represents credentials used to login to APIs
 type Key struct{}
@@ -105,7 +108,7 @@ func (p *PlanetscaleDB) InsertToSQL(tableName string, tableRows []*Row[id, text]
 // into the parameterized table.
 func (p *PlanetscaleDB) RetrieveSQL(table *Table[Row[id, text]]) error {
 
-	rows, err := p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT 10")
+	rows, err := p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT " + fmt.Sprintf("%d", rowsToRetrieve))
 	if err != nil {
 		return err
 	}
@@ -138,19 +141,27 @@ func (p *PlanetscaleDB) RetrieveSQL(table *Table[Row[id, text]]) error {
 // and updates the planetscale database accordingly.
 func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit *Table[Row[id, text]]) {
 
+	msg := "No new rows must be added to " + planetscale.Name
+
 	if planetscale.Name != reddit.Name {
-		log.Fatal("these databases are not the same")
+		log.Fatal("these tables are not the same")
+	}
+
+	if reddit.Rows[0] == nil {
+		log.Println(msg)
+		return
 	}
 
 	entriesToAdd := 0
-	for i := 0; i < 10; i++ {
+	for i := 0; i < rowsToRetrieve; i++ {
 		if planetscale.Rows[0].Col3 == reddit.Rows[i].Col3 {
 			entriesToAdd = i
 		}
 	}
 
 	if entriesToAdd == 0 {
-		log.Println("No new rows must be added to " + planetscale.Name)
+		log.Println(msg)
+		return
 	} else {
 		lastID := p.GetLastID(planetscale.Name)
 		var nextID id

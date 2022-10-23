@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 )
 
 type text string
@@ -32,7 +31,7 @@ type Row[I id, T text] struct {
 // Table represents an SQL table: it has a name and rows
 type Table[T Row[id, text]] struct {
 	Name string
-	Rows [1000]*T
+	Rows [1000]*Row[id, text]
 }
 
 // List prints out slice items to console
@@ -46,13 +45,9 @@ func (t *Table[T]) List() {
 	}
 }
 
-func ToString(t any) string {
-	switch v := t.(type) {
-	case string:
-		return v
-	case id:
-		return strconv.Itoa(int(v))
-	default:
-		return ""
+// Flush clears all the data in each respective table
+func (t *Table[T]) Flush() {
+	for _, row := range t.Rows {
+		*row = Row[id, text]{}
 	}
 }
