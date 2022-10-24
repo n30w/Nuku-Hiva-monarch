@@ -17,7 +17,7 @@ var (
 
 func init() {
 	var err error
-	env := "DEV"
+	env := "PROD"
 	db, err = sql.Open("mysql", os.Getenv(env))
 	if err != nil {
 		panic(Warn.Sprint(err))

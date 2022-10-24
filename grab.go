@@ -20,7 +20,9 @@ var (
 			Message:         "", // Set this to the page "after" setting from struct
 			StopCharacter:   "✓",
 			StopColors:      []string{"fgGreen"},
-		})
+		},
+	)
+	ResultsPerRedditRequest = 25
 )
 
 // ReadAllRedditSaved reads all cached posts on the Reddit account.
@@ -35,18 +37,17 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 	lastPos1 := 0
 	lastPos2 := 0
 
-	lim := 25
 	totalRequests := 1
 
 	if PleasePopulateIDs {
-		lim = 100
+		ResultsPerRedditRequest = 100
 		totalRequests = 10
 	}
 
 	ctx := context.Background()
 	opts := &reddit.ListUserOverviewOptions{
 		ListOptions: reddit.ListOptions{
-			Limit:  lim,
+			Limit:  ResultsPerRedditRequest,
 			After:  "",
 			Before: "",
 		},

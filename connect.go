@@ -163,7 +163,7 @@ func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit *Table[Row[id, text]]) {
 // compareRows compares two rows, one from Planetscale and one from Reddit.
 // It returns an integer, which represents the number of rows to update.
 func (p *PlanetscaleDB) compareRows(planetscale, reddit *Table[Row[id, text]]) int {
-	for i := 0; i < 10; i++ {
+	for i := 0; i < ResultsPerRedditRequest; i++ {
 		if planetscale.Rows[0].Col3 == reddit.Rows[i].Col3 {
 			return i
 		}

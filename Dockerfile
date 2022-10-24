@@ -1,15 +1,15 @@
-FROM golang:1.19-alpine
-
-RUN mkdir /app
-ADD . /app
-
-# Sets command context for subsequent commands
-WORKDIR /app
-
-# Download necessary Go modules
+# builder
+FROM golang:1.19-alpine as builder
+RUN mkdir /build
+ADD . /build
+WORKDIR /build
 RUN go mod download
+RUN go build -ldflags="-s -w" -o andthensome .
+# RUN go build -o main .
 
-# RUN go build -ldflags="-s -w" .
-RUN go build -o main
+# Clean image
+FROM alpine:3.14
+COPY --from=builder /build/andthensome .
 EXPOSE 8080
-CMD [ "/app/main" ]
+ENTRYPOINT [ "./andthensome" ]
+# CMD [ "/app/main" ]
