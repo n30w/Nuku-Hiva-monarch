@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -12,20 +11,21 @@ import (
 )
 
 var (
-	spinner, _ = yacspin.New(yacspin.Config{
-		Frequency:       100 * time.Millisecond,
-		CharSet:         yacspin.CharSets[43],
-		Suffix:          " retrieving posts and comments",
-		SuffixAutoColon: true,
-		Message:         "", // Set this to the page "after" setting from struct
-		StopCharacter:   "✓",
-		StopColors:      []string{"fgGreen"},
-	})
+	spinner, _ = yacspin.New(
+		yacspin.Config{
+			Frequency:       100 * time.Millisecond,
+			CharSet:         yacspin.CharSets[43],
+			Suffix:          " retrieving posts and comments",
+			SuffixAutoColon: true,
+			Message:         "", // Set this to the page "after" setting from struct
+			StopCharacter:   "✓",
+			StopColors:      []string{"fgGreen"},
+		})
 )
 
 // ReadAllRedditSaved reads all cached posts on the Reddit account.
 // This can be used to mass refresh an entire SQL database.
-func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key, totalRequests int) {
+func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 
 	var mySavedPosts []*reddit.Post
 	var mySavedComments []*reddit.Comment
@@ -35,11 +35,18 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key, totalR
 	lastPos1 := 0
 	lastPos2 := 0
 
-	// requests := 1000 / 100 // Reddit only caches 1000 posts
+	lim := 25
+	totalRequests := 1
+
+	if PleasePopulateIDs {
+		lim = 100
+		totalRequests = 10
+	}
+
 	ctx := context.Background()
 	opts := &reddit.ListUserOverviewOptions{
 		ListOptions: reddit.ListOptions{
-			Limit:  100,
+			Limit:  lim,
 			After:  "",
 			Before: "",
 		},
@@ -52,17 +59,17 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key, totalR
 	client, err := reddit.NewClient(*key.NewKey(), reddit.WithHTTPClient(httpClient))
 
 	if err != nil {
-		log.Println("Login failed :(")
+		log.Println(Warn.Sprint("Login failed :("))
 	} else {
-		fmt.Println("Contacting Reddit API...")
+		log.Println(Information.Sprint("Contacting Reddit API..."))
 	}
 
-	spinner.Start()
+	_ = spinner.Start()
 
 	for i := 0; i < totalRequests; i++ {
 		mySavedPosts, mySavedComments, response, err = client.User.Saved(ctx, opts)
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatal(Warn.Sprint(err))
 		}
 
 		for _, post := range mySavedPosts {
@@ -93,26 +100,42 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key, totalR
 		time.Sleep(1 * time.Second) // Its recommend to hit Reddit with only 1 request/sec
 	}
 
-	// Populate post IDs
-	for i, post := range postsTable.Rows {
-		if post == nil {
-			break
-		}
-		post.Col1 = id(lastPos1 - i)
+	if PleasePopulateIDs {
+		populateIDs(postsTable, lastPos1)
+		// populateIDs(commentsTable, lastPos2)
 	}
 
-	// Populate comment IDs
-	for i, comment := range commentsTable.Rows {
-		if comment == nil {
-			break
-		}
-		comment.Col1 = id(lastPos2 - i)
-	}
+	_ = spinner.Stop()
 
-	spinner.Stop()
-
-	fmt.Println("Saved posts and comments retrieved")
+	log.Print(Result.Sprint("Saved posts and comments retrieved"))
 	if err != nil {
-		log.Println(err)
+		log.Fatal(Warn.Sprint(err))
+	}
+}
+
+// populateIDs populates IDs given a new request to Reddit
+func populateIDs(t *Table[Row[id, text]], lastPosition int) {
+
+	for i, row := range t.Rows {
+		if row == nil {
+			break
+		}
+		row.Col1 = id(lastPosition - i)
+	}
+}
+
+// ClearTable clears a table's row of its column values. Resets it basically.
+func ClearTable(t ...*Table[Row[id, text]]) {
+	for _, table := range t {
+		for _, row := range table.Rows {
+			if row == nil {
+				continue
+			}
+			row.Col1 = 0
+			row.Col2 = ""
+			row.Col3 = ""
+			row.Col4 = ""
+			row.Col5 = ""
+		}
 	}
 }

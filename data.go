@@ -3,7 +3,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 )
 
 type text string
@@ -31,23 +31,20 @@ type Row[I id, T text] struct {
 // Table represents an SQL table: it has a name and rows
 type Table[T Row[id, text]] struct {
 	Name string
-	Rows [1000]*Row[id, text]
+	Rows [1000]*T
 }
 
 // List prints out slice items to console
-func (t *Table[T]) List() {
-	for _, row := range t.Rows {
+func (t *Table[Row]) List() {
+	if t.Rows[0] == nil {
+		log.Print(Warn.Sprint("No rows in this table"))
+		return
+	}
+
+	for _, row := range &t.Rows {
 		if row == nil {
-			fmt.Println("No rows in this table")
 			break
 		}
-		fmt.Println(*row)
-	}
-}
-
-// Flush clears all the data in each respective table
-func (t *Table[T]) Flush() {
-	for _, row := range t.Rows {
-		*row = Row[id, text]{}
+		log.Print(*row)
 	}
 }
