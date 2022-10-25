@@ -116,7 +116,6 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 
 // populateIDs populates IDs given a new request to Reddit
 func populateIDs(t *Table[Row[id, text]], lastPosition int) {
-
 	for i, row := range t.Rows {
 		if row == nil {
 			break
