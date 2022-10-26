@@ -11,9 +11,7 @@ import (
 
 const PleasePopulateIDs = false
 
-var (
-	db *sql.DB
-)
+var db *sql.DB
 
 func init() {
 	var err error

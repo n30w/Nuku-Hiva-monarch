@@ -4,13 +4,25 @@ Reddit only caches 1000 saved posts+comments. This is a problem if you keep savi
 
 The name for this project is named "Andthensome", because it has the ability to retrieve all your Reddit posts, and then some, because it can retrieve any updates as well.
 
+Pushes or merges to master branch will initiate github actions.
+
+Docker build command:
+
+```docker build $(pwd) --tag n30w/andthensome:latest --label n30w/andthensome:latest```
+
+Docker run command:
+
+```docker run --env-file=env_vars --publish 4000:4000 andthensome```
+
 ## TODO
 
 - [x] Store reddit credentials in .env file
 - [x] SQL Comparison function
 - [x] Setup webserver
 - [x] Use a docker container for API calls
+- [ ] Deletion function for SQL db
 - [ ] Log planetscale updates to webpage
+
 
 ## Links
 

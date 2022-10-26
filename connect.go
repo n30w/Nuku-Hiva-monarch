@@ -13,6 +13,9 @@ import (
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
+// verb is a type of SQL verb
+type verb string
+
 // Key represents credentials used to login to APIs
 type Key struct{}
 
@@ -26,18 +29,23 @@ func (k *Key) NewKey() *reddit.Credentials {
 	}
 }
 
+type Rows []*Row[id, text]
+type DBTable *Table[Row[id, text]]
+
 type DBModel interface {
-	InsertToSQL(table *Table[Row[id, text]]) error
-	RetrieveSQL(table *Table[Row[id, text]]) error
-	UpdateSQL(table *Table[Row[id, text]]) error
+	insertToSQL(tableName string, tableRows Rows) error
+	RetrieveSQL(tables ...DBTable) error
+	UpdateSQL(planetscale, reddit DBTable, v verb) error
 }
 
 type PlanetscaleDB struct {
 	*sql.DB
 }
 
-// InsertToSQL uploads table data to SQL
-func (p *PlanetscaleDB) InsertToSQL(tableName string, tableRows []*Row[id, text]) error {
+// InsertToSQL creates a string consisting of all the rows
+// in a given table, and executes the query, inserting
+// the items into the Planetscale database.
+func (p *PlanetscaleDB) insertToSQL(tableName string, tableRows Rows) error {
 	var query string
 	var inserts []string
 	var params []interface{}
@@ -104,7 +112,7 @@ func (p *PlanetscaleDB) InsertToSQL(tableName string, tableRows []*Row[id, text]
 
 // RetrieveSQL stores the most recent 10 rows from a PlanetscaleDB table
 // into the parameterized table.
-func (p *PlanetscaleDB) RetrieveSQL(tables ...*Table[Row[id, text]]) error {
+func (p *PlanetscaleDB) RetrieveSQL(tables ...DBTable) error {
 	for _, table := range tables {
 		rows, err := p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT 10")
 		if err != nil {
@@ -136,39 +144,37 @@ func (p *PlanetscaleDB) RetrieveSQL(tables ...*Table[Row[id, text]]) error {
 }
 
 // UpdateSQL compares the planetscale table and the reddit table,
-// and updates the planetscale database accordingly.
-func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit *Table[Row[id, text]]) {
-
-	msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
+// and updates the planetscale database accordingly. This is essentially
+// a sync function that synchronizes the planetscale database
+// and the Reddit saved posts list
+func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit DBTable, v verb) error {
 
 	if planetscale.Name != reddit.Name {
-		log.Fatal(Warn.Sprintf("these tables are not the same"))
+		return errors.New(Warn.Sprintf("these tables are not the same"))
 	}
 
-	mostRecentIDOnPlanetscale := p.getLastID(planetscale.Name)
+	switch v {
+	case "ADD":
+		msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
+		mostRecentIDOnPlanetscale := p.getLastID(planetscale.Name)
+		entries := entriesToAdd(planetscale, reddit)
 
-	entriesToAdd := p.compareRows(planetscale, reddit)
-
-	if entriesToAdd == 0 {
-		log.Print(msg)
-		return
-	} else {
-		for i := 0; i < entriesToAdd; i++ {
-			reddit.Rows[i].Col1 = mostRecentIDOnPlanetscale + id(entriesToAdd-i)
+		if entries == 0 {
+			log.Print(msg)
+			return nil
+		} else {
+			for i := 0; i < entries; i++ {
+				reddit.Rows[i].Col1 = mostRecentIDOnPlanetscale + id(entries-i)
+			}
+			p.insertToSQL(planetscale.Name, reddit.Rows[0:entries])
 		}
-		p.InsertToSQL(planetscale.Name, reddit.Rows[0:entriesToAdd])
-	}
-}
+	case "DELETE":
 
-// compareRows compares two rows, one from Planetscale and one from Reddit.
-// It returns an integer, which represents the number of rows to update.
-func (p *PlanetscaleDB) compareRows(planetscale, reddit *Table[Row[id, text]]) int {
-	for i := 0; i < ResultsPerRedditRequest; i++ {
-		if planetscale.Rows[0].Col3 == reddit.Rows[i].Col3 {
-			return i
-		}
+	default:
+		return errors.New(Warn.Sprint("no operation provided in UpdateSQL()"))
 	}
-	return 0
+
+	return nil
 }
 
 // GetLastID makes a query to the SQL database and returns the most latest ID
@@ -192,4 +198,23 @@ func (p *PlanetscaleDB) getLastID(name string) id {
 	}
 
 	return id(max)
+}
+
+// entriesToAdd compares two rows, one from Planetscale and one from Reddit.
+// It returns an integer, which represents the number of rows to update.
+func entriesToAdd(planetscale, reddit *Table[Row[id, text]]) int {
+	for i := 0; i < ResultsPerRedditRequest; i++ {
+		if planetscale.Rows[0].Col3 == reddit.Rows[i].Col3 {
+			return i
+		}
+	}
+	return 0
+}
+
+// compareIncrement compares two tables and returns a slice of
+// ids at which to delete in order ot update the planetscale database
+func (p *PlanetscaleDB) compareIndex(planetscale, reddit *Table[Row[id, text]]) []id {
+	idsToUpdate := make([]id, 0)
+
+	return idsToUpdate
 }
