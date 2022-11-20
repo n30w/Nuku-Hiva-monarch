@@ -13,6 +13,7 @@ import (
 const (
 	PleasePopulateIDs = false
 	env               = "PROD"
+	version           = "1.0.1"
 )
 
 var db *sql.DB
@@ -39,6 +40,7 @@ func main() {
 		Psdb:           &PlanetscaleDB{db},
 	}
 
+	log.Print(Start.Sprintf("Starting andthensome %s", version))
 	log.Print(Start.Sprint("Server listening on :4000"))
 
 	mux := http.NewServeMux()
