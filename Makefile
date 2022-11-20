@@ -8,5 +8,10 @@ run:
 	go build -o ${BINARY_NAME} .
 	./${BINARY_NAME}
 
+populate:
+	make run
+	curl localhost:4000/populate
 
-all: run
+all: make run
+
+

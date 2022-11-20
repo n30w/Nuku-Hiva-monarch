@@ -9,14 +9,15 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql" // The underscore on imports autoloads the dependency. Do not need to call something like "godotenv.Load()"
+	_ "github.com/go-sql-driver/mysql" // The underscore will autoload the dependency.
+	// Do not need to call something like "godotenv.Load()"
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
 // verb is a type of SQL verb
 type verb string
 
-// Key represents credentials used to login to APIs
+// Key represents credentials used to log in to APIs
 type Key struct{}
 
 // NewKey returns a new key given environment variables
@@ -110,6 +111,15 @@ func (p *PlanetscaleDB) insertToSQL(tableName string, tableRows Rows) error {
 	return nil
 }
 
+func (p *PlanetscaleDB) DeleteRowsFromSQL(tableName string) error {
+	query, err := p.Query("DELETE FROM " + tableName)
+	if err != nil {
+		return err
+	}
+	defer query.Close()
+	return nil
+}
+
 // RetrieveSQL stores the most recent 10 rows from a PlanetscaleDB table
 // into the parameterized table.
 func (p *PlanetscaleDB) RetrieveSQL(tables ...DBTable) error {
@@ -156,7 +166,7 @@ func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit DBTable, v verb) error {
 	switch v {
 	case "ADD":
 		msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
-		mostRecentIDOnPlanetscale := p.getLastID(planetscale.Name)
+		mostRecentIDOnPlanetscale := p.getLastId(planetscale.Name)
 		entries := entriesToAdd(planetscale, reddit)
 
 		if entries == 0 {
@@ -169,6 +179,12 @@ func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit DBTable, v verb) error {
 			p.insertToSQL(planetscale.Name, reddit.Rows[0:entries])
 		}
 	case "DELETE":
+		msg := Information.Sprint("Deleted rows from SQL tables")
+		if err := p.DeleteRowsFromSQL(planetscale.Name); err != nil {
+			return errors.New(Warn.Sprint("Could not delete tables: %s", err))
+		} else {
+			log.Print(msg)
+		}
 
 	default:
 		return errors.New(Warn.Sprint("no operation provided in UpdateSQL()"))
@@ -177,8 +193,8 @@ func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit DBTable, v verb) error {
 	return nil
 }
 
-// GetLastID makes a query to the SQL database and returns the most latest ID
-func (p *PlanetscaleDB) getLastID(name string) id {
+// getLastID makes a query to the SQL database and returns the latest ID
+func (p *PlanetscaleDB) getLastId(name string) id {
 	rows, err := p.Query("SELECT MAX(id) FROM " + name)
 	if err != nil {
 		log.Fatal(Warn.Sprint(err))
@@ -205,6 +221,7 @@ func (p *PlanetscaleDB) getLastID(name string) id {
 func entriesToAdd(planetscale, reddit *Table[Row[id, text]]) int {
 	for i := 0; i < ResultsPerRedditRequest; i++ {
 		if planetscale.Rows[0].Col3 == reddit.Rows[i].Col3 {
+			// TODO perhaps use slice?
 			return i
 		}
 	}
@@ -213,8 +230,8 @@ func entriesToAdd(planetscale, reddit *Table[Row[id, text]]) int {
 
 // compareIncrement compares two tables and returns a slice of
 // ids at which to delete in order ot update the planetscale database
-func (p *PlanetscaleDB) compareIndex(planetscale, reddit *Table[Row[id, text]]) []id {
-	idsToUpdate := make([]id, 0)
+// func (p *PlanetscaleDB) compareIndex(planetscale, reddit *Table[Row[id, text]]) []id {
+// 	idsToUpdate := make([]id, 0)
 
-	return idsToUpdate
-}
+// 	return idsToUpdate
+// }

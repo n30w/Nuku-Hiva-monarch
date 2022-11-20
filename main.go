@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -40,8 +41,11 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", server.UpdateHandler)
+	mux.HandleFunc("/populate", server.PopulateHandler)
+	mux.HandleFunc("/delete", server.ClearTableHandler)
 
 	if err := http.ListenAndServe(":4000", mux); err != nil {
+		fmt.Print(err)
 		log.Fatal(Warn.Sprint(err))
 	}
 }
