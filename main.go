@@ -12,7 +12,7 @@ import (
 
 const (
 	PleasePopulateIDs = false
-	env               = "DEV"
+	env               = "PROD"
 )
 
 var db *sql.DB
