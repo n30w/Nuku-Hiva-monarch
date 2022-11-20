@@ -13,5 +13,3 @@ populate:
 	curl localhost:4000/populate
 
 all: make run
-
-
