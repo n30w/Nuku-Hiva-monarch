@@ -184,7 +184,7 @@ func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit DBTable, v verb) error {
 	case "DELETE":
 		msg := Information.Sprint("Deleted rows from SQL tables")
 		if err := p.DeleteRowsFromSQL(planetscale.Name); err != nil {
-			return errors.New(Warn.Sprint("Could not delete tables: %s", err))
+			return errors.New(Warn.Sprintf("Could not delete tables: %s", err))
 		} else {
 			log.Print(msg)
 		}
