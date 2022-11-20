@@ -167,7 +167,7 @@ func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit DBTable, v verb) error {
 	case "ADD":
 		msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
 		mostRecentIDOnPlanetscale := p.getLastId(planetscale.Name)
-		entries := entriesToAdd(planetscale, reddit)
+		entries := entriesToAdd(planetscale.Rows[0:26], reddit.Rows[0:26])
 
 		if entries == 0 {
 			log.Print(msg)
@@ -218,10 +218,9 @@ func (p *PlanetscaleDB) getLastId(name string) id {
 
 // entriesToAdd compares two rows, one from Planetscale and one from Reddit.
 // It returns an integer, which represents the number of rows to update.
-func entriesToAdd(planetscale, reddit *Table[Row[id, text]]) int {
+func entriesToAdd(planetscale, reddit []*Row[id, text]) int {
 	for i := 0; i < ResultsPerRedditRequest; i++ {
-		if planetscale.Rows[0].Col3 == reddit.Rows[i].Col3 {
-			// TODO perhaps use slice?
+		if planetscale[0].Col3 == reddit[i].Col3 {
 			return i
 		}
 	}
