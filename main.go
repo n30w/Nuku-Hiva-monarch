@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -9,15 +10,15 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-const PleasePopulateIDs = false
-
-var (
-	db *sql.DB
+const (
+	PleasePopulateIDs = false
+	env               = "PROD"
 )
+
+var db *sql.DB
 
 func init() {
 	var err error
-	env := "PROD"
 	db, err = sql.Open("mysql", os.Getenv(env))
 	if err != nil {
 		panic(Warn.Sprint(err))
@@ -43,7 +44,14 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", server.UpdateHandler)
 
+	// Only allow certain requests in Development environment only
+	if env == "DEV" {
+		mux.HandleFunc("/populate", server.PopulateHandler)
+		mux.HandleFunc("/delete", server.ClearTableHandler)
+	}
+
 	if err := http.ListenAndServe(":4000", mux); err != nil {
+		fmt.Print(err)
 		log.Fatal(Warn.Sprint(err))
 	}
 }

@@ -3,24 +3,24 @@
 package main
 
 import (
-	"log"
+	"fmt"
+	"strings"
 )
 
 type text string
 type id uint64
+
+func (i *id) String() string {
+	return fmt.Sprintf("%d", i)
+}
 
 // Col defines column types in SQL Database
 type Col interface {
 	id | text
 }
 
-// Rows consist of IDs and text
-type Rows interface {
-	[1000]*Row[id, text]
-}
-
 // Row defines a row in an SQL table
-type Row[I id, T text] struct {
+type Row[I Col, T Col] struct {
 	Col1 I
 	Col2 T
 	Col3 T
@@ -28,23 +28,26 @@ type Row[I id, T text] struct {
 	Col5 T
 }
 
+func (r *Row[I, T]) String() string {
+	return fmt.Sprintf(
+		"[%T, %T, %T, %T, %T]",
+		r.Col1, r.Col2, r.Col3, r.Col4, r.Col5,
+	)
+}
+
 // Table represents an SQL table: it has a name and rows
 type Table[T Row[id, text]] struct {
 	Name string
-	Rows [1000]*T
+	Rows [1000]*Row[id, text]
 }
 
-// List prints out slice items to console
-func (t *Table[Row]) List() {
-	if t.Rows[0] == nil {
-		log.Print(Warn.Sprint("No rows in this table"))
-		return
-	}
-
-	for _, row := range &t.Rows {
+func (t *Table[Row]) String() string {
+	var sb strings.Builder
+	for _, row := range t.Rows {
 		if row == nil {
 			break
 		}
-		log.Print(*row)
+		sb.WriteString(row.String() + "\n")
 	}
+	return sb.String()
 }

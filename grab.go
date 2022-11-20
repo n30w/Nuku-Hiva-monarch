@@ -25,7 +25,7 @@ var (
 	ResultsPerRedditRequest = 25
 )
 
-// ReadAllRedditSaved reads all cached posts on the Reddit account.
+// GrabSaved reads all cached posts on the Reddit account.
 // This can be used to mass refresh an entire SQL database.
 func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 
@@ -103,7 +103,7 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 
 	if PleasePopulateIDs {
 		populateIDs(postsTable, lastPos1)
-		// populateIDs(commentsTable, lastPos2)
+		populateIDs(commentsTable, lastPos2)
 	}
 
 	_ = spinner.Stop()
@@ -116,7 +116,6 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 
 // populateIDs populates IDs given a new request to Reddit
 func populateIDs(t *Table[Row[id, text]], lastPosition int) {
-
 	for i, row := range t.Rows {
 		if row == nil {
 			break
