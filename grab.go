@@ -22,7 +22,7 @@ var (
 			StopColors:      []string{"fgGreen"},
 		},
 	)
-	ResultsPerRedditRequest = 25
+	ResultsPerRedditRequest = 50
 )
 
 // GrabSaved reads all cached posts on the Reddit account.
@@ -109,18 +109,9 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 	_ = spinner.Stop()
 
 	log.Print(Result.Sprint("Saved posts and comments retrieved"))
+	// log.Print(Result.Sprintf("Comments: %x", commentsTable.Rows))
 	if err != nil {
 		log.Fatal(Warn.Sprint(err))
-	}
-}
-
-// populateIDs populates IDs given a new request to Reddit
-func populateIDs(t *Table[Row[id, text]], lastPosition int) {
-	for i, row := range t.Rows {
-		if row == nil {
-			break
-		}
-		row.Col1 = id(lastPosition - i)
 	}
 }
 
@@ -137,5 +128,15 @@ func ClearTable(t ...*Table[Row[id, text]]) {
 			row.Col4 = ""
 			row.Col5 = ""
 		}
+	}
+}
+
+// populateIDs populates IDs given a new request to Reddit
+func populateIDs(t *Table[Row[id, text]], lastPosition int) {
+	for i, row := range t.Rows {
+		if row == nil {
+			break
+		}
+		row.Col1 = id(lastPosition - i)
 	}
 }

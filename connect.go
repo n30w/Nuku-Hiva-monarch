@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -120,11 +121,11 @@ func (p *PlanetscaleDB) DeleteRowsFromSQL(tableName string) error {
 	return nil
 }
 
-// RetrieveSQL stores the most recent 10 rows from a PlanetscaleDB table
+// RetrieveSQL stores the most recent n rows from a PlanetscaleDB table
 // into the parameterized table.
 func (p *PlanetscaleDB) RetrieveSQL(tables ...DBTable) error {
 	for _, table := range tables {
-		rows, err := p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT 10")
+		rows, err := p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT " + strconv.Itoa(ResultsPerRedditRequest))
 		if err != nil {
 			return err
 		}
@@ -168,8 +169,8 @@ func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit DBTable, v verb) error {
 		msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
 		mostRecentIDOnPlanetscale := p.getLastId(planetscale.Name)
 		entries := entriesToAdd(
-			planetscale.Rows[0:ResultsPerRedditRequest+1],
-			reddit.Rows[0:ResultsPerRedditRequest+1],
+			planetscale.Rows[0:ResultsPerRedditRequest],
+			reddit.Rows[0:ResultsPerRedditRequest],
 		)
 
 		if entries == 0 {
@@ -223,17 +224,9 @@ func (p *PlanetscaleDB) getLastId(name string) id {
 // It returns an integer, which represents the number of rows to update.
 func entriesToAdd(planetscale, reddit []*Row[id, text]) int {
 	for i := 0; i < ResultsPerRedditRequest; i++ {
-		if planetscale[0].Col3 == reddit[i].Col3 {
+		if planetscale[0].Col3 == reddit[i].Col3 || reddit[i+1] == nil {
 			return i
 		}
 	}
 	return 0
 }
-
-// compareIncrement compares two tables and returns a slice of
-// ids at which to delete in order ot update the planetscale database
-// func (p *PlanetscaleDB) compareIndex(planetscale, reddit *Table[Row[id, text]]) []id {
-// 	idsToUpdate := make([]id, 0)
-
-// 	return idsToUpdate
-// }
