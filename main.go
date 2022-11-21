@@ -37,7 +37,7 @@ func main() {
 		DBPosts:        &Table[Row[id, text]]{Name: "posts"},
 		DBComments:     &Table[Row[id, text]]{Name: "comments"},
 		Key:            &Key{},
-		Psdb:           &PlanetscaleDB{db},
+		PlanetscaleDB:  &PlanetscaleDB{db},
 	}
 
 	log.Print(Start.Sprintf("Starting andthensome %s", version))
