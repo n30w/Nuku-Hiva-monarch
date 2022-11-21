@@ -17,8 +17,6 @@ func (s *Server) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	GrabSaved(s.RedditPosts, s.RedditComments, s.Key)
 
-	var add verb = "ADD"
-
 	err = s.RetrieveSQL(s.DBPosts, s.DBComments)
 	if err != nil {
 		w.Write([]byte(fmt.Sprintf("%s", err)))
@@ -49,6 +47,7 @@ func (s *Server) PopulateHandler(w http.ResponseWriter, r *http.Request) {
 	if err := s.insertToSQL(s.RedditPosts.Name, s.RedditPosts.Rows[:]); err != nil {
 		fmt.Println(err)
 	}
+
 	if err := s.insertToSQL(s.RedditComments.Name, s.RedditComments.Rows[:]); err != nil {
 		fmt.Println(err)
 	}
@@ -56,11 +55,12 @@ func (s *Server) PopulateHandler(w http.ResponseWriter, r *http.Request) {
 
 // ClearTableHandler handles clearing tables requests
 func (s *Server) ClearTableHandler(w http.ResponseWriter, r *http.Request) {
-	var delete verb = "DELETE"
+
 	w.Write([]byte(Result.Sprint("Cleared all rows from all tables")))
 	if err := s.UpdateSQL(s.DBPosts, s.RedditPosts, delete); err != nil {
 		fmt.Println(err)
 	}
+
 	if err := s.UpdateSQL(s.DBComments, s.RedditComments, delete); err != nil {
 		fmt.Println(err)
 	}

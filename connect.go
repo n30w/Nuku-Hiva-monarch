@@ -16,7 +16,12 @@ import (
 )
 
 // verb is a type of SQL verb
-type verb string
+type verb int
+
+const (
+	add verb = iota
+	delete
+)
 
 // Key represents credentials used to log in to APIs
 type Key struct{}
@@ -165,7 +170,7 @@ func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit DBTable, v verb) error {
 	}
 
 	switch v {
-	case "ADD":
+	case add:
 		msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
 		mostRecentIDOnPlanetscale := p.getLastId(planetscale.Name)
 		entries := entriesToAdd(
@@ -182,7 +187,7 @@ func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit DBTable, v verb) error {
 			}
 			p.insertToSQL(planetscale.Name, reddit.Rows[0:entries])
 		}
-	case "DELETE":
+	case delete:
 		msg := Information.Sprint("Deleted rows from SQL tables")
 		if err := p.DeleteRowsFromSQL(planetscale.Name); err != nil {
 			return errors.New(Warn.Sprintf("Could not delete tables: %s", err))
