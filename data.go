@@ -51,3 +51,19 @@ func (t *Table[Row]) String() string {
 	}
 	return sb.String()
 }
+
+// ClearTable clears a table's row of its column values. Resets it basically.
+func ClearTable(t ...*Table[Row[id, text]]) {
+	for _, table := range t {
+		for _, row := range table.Rows {
+			if row == nil {
+				continue
+			}
+			row.Col1 = 0
+			row.Col2 = ""
+			row.Col3 = ""
+			row.Col4 = ""
+			row.Col5 = ""
+		}
+	}
+}

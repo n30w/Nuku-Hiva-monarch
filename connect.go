@@ -117,6 +117,7 @@ func (p *PlanetscaleDB) insertToSQL(tableName string, tableRows Rows) error {
 	return nil
 }
 
+// DeleteRowsFromSQL deletes all rows from a specified table.
 func (p *PlanetscaleDB) DeleteRowsFromSQL(tableName string) error {
 	query, err := p.Query("DELETE FROM " + tableName)
 	if err != nil {
