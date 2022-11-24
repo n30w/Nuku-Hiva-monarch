@@ -52,6 +52,9 @@ func (t *Table[Row]) String() string {
 	return sb.String()
 }
 
+type Rows []*Row[id, text]
+type DBTable *Table[Row[id, text]]
+
 // ClearTable clears a table's row of its column values. Resets it basically.
 func ClearTable(t ...*Table[Row[id, text]]) {
 	for _, table := range t {

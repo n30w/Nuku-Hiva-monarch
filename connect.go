@@ -36,9 +36,6 @@ func (k *Key) NewKey() *reddit.Credentials {
 	}
 }
 
-type Rows []*Row[id, text]
-type DBTable *Table[Row[id, text]]
-
 type PlanetscaleDB struct {
 	*sql.DB
 }
@@ -164,6 +161,7 @@ func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit DBTable, v verb) error {
 		return errors.New(Warn.Sprintf("these tables are not the same"))
 	}
 
+	// TODO make a test for case: add
 	switch v {
 	case add:
 		msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
@@ -189,7 +187,6 @@ func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit DBTable, v verb) error {
 		} else {
 			log.Print(msg)
 		}
-
 	default:
 		return errors.New(Warn.Sprint("no operation provided in UpdateSQL()"))
 	}
