@@ -12,9 +12,10 @@ import (
 
 const (
 	PleasePopulateIDs = false
-	env               = "PROD"
 	version           = "1.0.1"
 )
+
+var env = os.Getenv("ENVIRONMENT")
 
 var db *sql.DB
 
@@ -40,7 +41,7 @@ func main() {
 		PlanetscaleDB:  &PlanetscaleDB{db},
 	}
 
-	log.Print(Start.Sprintf("Starting andthensome %s", version))
+	log.Print(Start.Sprintf("Starting andthensome %s %s", version, env))
 	log.Print(Start.Sprint("Server listening on :4000"))
 
 	mux := http.NewServeMux()
