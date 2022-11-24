@@ -15,9 +15,10 @@ const (
 	version           = "1.0.1"
 )
 
-var env = os.Getenv("ENVIRONMENT")
-
-var db *sql.DB
+var (
+	env = os.Getenv("ENVIRONMENT")
+	db  *sql.DB
+)
 
 func init() {
 	var err error
