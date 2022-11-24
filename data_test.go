@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestClearTable(t *testing.T) {
+func TestClearTables(t *testing.T) {
 
 	table := &Table[Row[id, text]]{
 		Name: "test table",
@@ -23,15 +23,14 @@ func TestClearTable(t *testing.T) {
 			Col5: text(fmt.Sprintf("%d", i)),
 		}
 		comparison[i] = i
-		fmt.Println(table.Rows[i].Col1)
 	}
 
-	ClearTable(table)
+	ClearTables(table)
 
 	// Compare data
 	for i := 1; i < 1000; i++ {
 		if table.Rows[i].Col1 == id(comparison[i]) {
-			t.Errorf("table not cleared, some data still remains at index %d", i)
+			t.Errorf("got occupied table, data remains at index %d", i)
 		}
 	}
 }

@@ -36,7 +36,7 @@ func (s *Server) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte(Result.Sprintf("Successfully updated Planetscale Database\n")))
-	ClearTable(s.RedditPosts, s.RedditComments, s.DBPosts, s.DBComments)
+	ClearTables(s.RedditPosts, s.RedditComments, s.DBPosts, s.DBComments)
 }
 
 // PopulateHandler handles populating tables requests

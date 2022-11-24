@@ -59,7 +59,7 @@ type Rows []*Row[id, text]
 type DBTable *Table[Row[id, text]]
 
 // ClearTable clears a table's row of its column values. Resets it basically.
-func ClearTable(t ...*Table[Row[id, text]]) {
+func ClearTables(t ...*Table[Row[id, text]]) {
 	for _, table := range t {
 		for _, row := range table.Rows {
 			if row == nil {
