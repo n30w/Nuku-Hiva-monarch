@@ -20,7 +20,7 @@ var (
 	db  *sql.DB
 )
 
-func init() {
+func main() {
 	var err error
 	db, err = sql.Open("mysql", os.Getenv(env))
 	if err != nil {
@@ -30,9 +30,7 @@ func init() {
 	if err := db.Ping(); err != nil {
 		panic(Warn.Sprint(err))
 	}
-}
 
-func main() {
 	server := &Server{
 		RedditPosts:    &Table[Row[id, text]]{Name: "posts"},
 		RedditComments: &Table[Row[id, text]]{Name: "comments"},
