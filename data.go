@@ -5,10 +5,13 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 type text string
 type id uint64
+type date time.Time
+type state bool
 
 func (i *id) String() string {
 	return fmt.Sprintf("%d", i)
@@ -16,7 +19,7 @@ func (i *id) String() string {
 
 // Col defines column types in SQL Database
 type Col interface {
-	id | text
+	id | text | date | state
 }
 
 // Row defines a row in an SQL table
