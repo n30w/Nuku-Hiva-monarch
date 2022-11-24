@@ -39,12 +39,6 @@ func (k *Key) NewKey() *reddit.Credentials {
 type Rows []*Row[id, text]
 type DBTable *Table[Row[id, text]]
 
-type DBModel interface {
-	insertToSQL(tableName string, tableRows Rows) error
-	RetrieveSQL(tables ...DBTable) error
-	UpdateSQL(planetscale, reddit DBTable, v verb) error
-}
-
 type PlanetscaleDB struct {
 	*sql.DB
 }
@@ -52,7 +46,7 @@ type PlanetscaleDB struct {
 // InsertToSQL creates a string consisting of all the rows
 // in a given table, and executes the query, inserting
 // the items into the Planetscale database.
-func (p *PlanetscaleDB) insertToSQL(tableName string, tableRows Rows) error {
+func (p *PlanetscaleDB) InsertToSQL(tableName string, tableRows Rows) error {
 	var query string
 	var inserts []string
 	var params []interface{}
@@ -186,7 +180,7 @@ func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit DBTable, v verb) error {
 			for i := 0; i < entries; i++ {
 				reddit.Rows[i].Col1 = mostRecentIDOnPlanetscale + id(entries-i)
 			}
-			p.insertToSQL(planetscale.Name, reddit.Rows[0:entries])
+			p.InsertToSQL(planetscale.Name, reddit.Rows[0:entries])
 		}
 	case delete:
 		msg := Information.Sprint("Deleted rows from SQL tables")

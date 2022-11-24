@@ -19,36 +19,36 @@ func (s *Server) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = s.RetrieveSQL(s.DBPosts, s.DBComments)
 	if err != nil {
-		w.Write([]byte(fmt.Sprintf("%s", err)))
+		w.Write([]byte(fmt.Sprintf("%s\n", err)))
 		log.Fatal(err)
 	}
 
 	err = s.UpdateSQL(s.DBPosts, s.RedditPosts, add)
 	if err != nil {
-		w.Write([]byte(fmt.Sprintf("%s", err)))
+		w.Write([]byte(fmt.Sprintf("%s\n", err)))
 		log.Fatal(err)
 	}
 
 	err = s.UpdateSQL(s.DBComments, s.RedditComments, add)
 	if err != nil {
-		w.Write([]byte(fmt.Sprintf("%s", err)))
+		w.Write([]byte(fmt.Sprintf("%s\n", err)))
 		log.Fatal(err)
 	}
 
-	w.Write([]byte(Result.Sprint("Successfully updated Planetscale Database")))
+	w.Write([]byte(Result.Sprintf("Successfully updated Planetscale Database\n")))
 	ClearTable(s.RedditPosts, s.RedditComments, s.DBPosts, s.DBComments)
 }
 
 // PopulateHandler handles populating tables requests
 func (s *Server) PopulateHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(Result.Sprint("Successfully populated Planetscale Database")))
+	w.Write([]byte(Result.Sprintf("Successfully populated Planetscale Database\n")))
 	GrabSaved(s.RedditPosts, s.RedditComments, s.Key)
 
-	if err := s.insertToSQL(s.RedditPosts.Name, s.RedditPosts.Rows[:]); err != nil {
+	if err := s.InsertToSQL(s.RedditPosts.Name, s.RedditPosts.Rows[:]); err != nil {
 		fmt.Println(err)
 	}
 
-	if err := s.insertToSQL(s.RedditComments.Name, s.RedditComments.Rows[:]); err != nil {
+	if err := s.InsertToSQL(s.RedditComments.Name, s.RedditComments.Rows[:]); err != nil {
 		fmt.Println(err)
 	}
 }
@@ -56,7 +56,7 @@ func (s *Server) PopulateHandler(w http.ResponseWriter, r *http.Request) {
 // ClearTableHandler handles clearing tables requests
 func (s *Server) ClearTableHandler(w http.ResponseWriter, r *http.Request) {
 
-	w.Write([]byte(Result.Sprint("Cleared all rows from all tables")))
+	w.Write([]byte(Result.Sprintf("Cleared all rows from all tables\n")))
 	if err := s.UpdateSQL(s.DBPosts, s.RedditPosts, delete); err != nil {
 		fmt.Println(err)
 	}
