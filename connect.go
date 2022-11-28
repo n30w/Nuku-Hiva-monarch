@@ -16,7 +16,7 @@ import (
 )
 
 // verb is a type of SQL verb
-type verb int
+type verb uint8
 
 const (
 	add verb = iota
