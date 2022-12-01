@@ -49,7 +49,7 @@ func main() {
 	// Only allow certain requests in Development environment only
 	if env == "DEV" {
 		mux.HandleFunc("/populate", server.PopulateHandler)
-		mux.HandleFunc("/delete", server.ClearTableHandler)
+		mux.HandleFunc("/delete", server.ClearTableHandler(server))
 	}
 
 	if err := http.ListenAndServe(":4000", mux); err != nil {

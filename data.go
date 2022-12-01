@@ -38,6 +38,13 @@ func (r *Row[I, T]) String() string {
 	)
 }
 
+type RelationalDB interface {
+	Insert(tableName string, tableRows Rows) error
+	Delete(tableName string) error
+	Retrieve(tables ...DBTable) error
+	Update(planetscale, reddit DBTable, v verb) error
+}
+
 // Table represents an SQL table: it has a name and rows
 type Table[T Row[id, text]] struct {
 	Name string
