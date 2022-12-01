@@ -38,6 +38,9 @@ func (r *Row[I, T]) String() string {
 	)
 }
 
+type DBTable *Table[Row[id, text]]
+type Rows [1000]*Row[id, text]
+
 type RelationalDB interface {
 	Insert(tableName string, tableRows Rows) error
 	Delete(tableName string) error
@@ -48,7 +51,7 @@ type RelationalDB interface {
 // Table represents an SQL table: it has a name and rows
 type Table[T Row[id, text]] struct {
 	Name string
-	Rows [1000]*Row[id, text]
+	Rows Rows
 }
 
 func (t *Table[Row]) String() string {
@@ -62,11 +65,8 @@ func (t *Table[Row]) String() string {
 	return sb.String()
 }
 
-type Rows []*Row[id, text]
-type DBTable *Table[Row[id, text]]
-
 // ClearTable clears a table's row of its column values. Resets it basically.
-func ClearTables(t ...*Table[Row[id, text]]) {
+func ClearTables(t ...DBTable) {
 	for _, table := range t {
 		for _, row := range table.Rows {
 			if row == nil {

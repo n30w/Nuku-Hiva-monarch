@@ -44,11 +44,11 @@ func (s *Server) PopulateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(Result.Sprintf("Successfully populated Planetscale Database\n")))
 	GrabSaved(s.RedditPosts, s.RedditComments, s.Key)
 
-	if err := s.Insert(s.RedditPosts.Name, s.RedditPosts.Rows[:]); err != nil {
+	if err := s.Insert(s.RedditPosts.Name, s.RedditPosts.Rows); err != nil {
 		fmt.Println(err)
 	}
 
-	if err := s.Insert(s.RedditComments.Name, s.RedditComments.Rows[:]); err != nil {
+	if err := s.Insert(s.RedditComments.Name, s.RedditComments.Rows); err != nil {
 		fmt.Println(err)
 	}
 }

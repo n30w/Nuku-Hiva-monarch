@@ -178,7 +178,7 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, v verb) error {
 			for i := 0; i < entries; i++ {
 				reddit.Rows[i].Col1 = mostRecentIDOnPlanetscale + id(entries-i)
 			}
-			p.Insert(planetscale.Name, reddit.Rows[0:entries])
+			p.Insert(planetscale.Name, reddit.Rows)
 		}
 	case delete:
 		msg := Information.Sprint("Deleted rows from SQL tables")
