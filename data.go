@@ -5,18 +5,25 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 type text string
 type id uint64
+type date time.Time
+type state bool
 
 func (i *id) String() string {
 	return fmt.Sprintf("%d", i)
 }
 
+func (s *state) String() string {
+	return fmt.Sprintf("%T", s)
+}
+
 // Col defines column types in SQL Database
 type Col interface {
-	id | text
+	id | text | date | state
 }
 
 // Row defines a row in an SQL table
@@ -30,15 +37,25 @@ type Row[I Col, T Col] struct {
 
 func (r *Row[I, T]) String() string {
 	return fmt.Sprintf(
-		"[%T, %T, %T, %T, %T]",
-		r.Col1, r.Col2, r.Col3, r.Col4, r.Col5,
+		"[%T, %T, %T, %T, %T]\n",
+		&r.Col1, &r.Col2, &r.Col3, &r.Col4, &r.Col5,
 	)
+}
+
+type DBTable *Table[Row[id, text]]
+type Rows [1000]*Row[id, text]
+
+type RelationalDB interface {
+	Insert(tableName string, tableRows Rows) error
+	Delete(tableName string) error
+	Retrieve(tables ...DBTable) error
+	Update(planetscale, reddit DBTable, v verb) error
 }
 
 // Table represents an SQL table: it has a name and rows
 type Table[T Row[id, text]] struct {
 	Name string
-	Rows [1000]*Row[id, text]
+	Rows Rows
 }
 
 func (t *Table[Row]) String() string {
@@ -50,4 +67,20 @@ func (t *Table[Row]) String() string {
 		sb.WriteString(row.String() + "\n")
 	}
 	return sb.String()
+}
+
+// ClearTables clears a table's row of its column values. Resets it basically.
+func ClearTables(t ...DBTable) {
+	for _, table := range t {
+		for _, row := range table.Rows {
+			if row == nil {
+				continue
+			}
+			row.Col1 = 0
+			row.Col2 = ""
+			row.Col3 = ""
+			row.Col4 = ""
+			row.Col5 = ""
+		}
+	}
 }

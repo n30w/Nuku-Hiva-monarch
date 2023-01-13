@@ -12,13 +12,15 @@ import (
 
 const (
 	PleasePopulateIDs = false
-	env               = "PROD"
-	version           = "1.0.1"
+	version           = "1.0.2"
 )
 
-var db *sql.DB
+var (
+	env = os.Getenv("ENVIRONMENT")
+	db  *sql.DB
+)
 
-func init() {
+func main() {
 	var err error
 	db, err = sql.Open("mysql", os.Getenv(env))
 	if err != nil {
@@ -28,19 +30,17 @@ func init() {
 	if err := db.Ping(); err != nil {
 		panic(Warn.Sprint(err))
 	}
-}
 
-func main() {
 	server := &Server{
 		RedditPosts:    &Table[Row[id, text]]{Name: "posts"},
 		RedditComments: &Table[Row[id, text]]{Name: "comments"},
 		DBPosts:        &Table[Row[id, text]]{Name: "posts"},
 		DBComments:     &Table[Row[id, text]]{Name: "comments"},
 		Key:            &Key{},
-		Psdb:           &PlanetscaleDB{db},
+		PlanetscaleDB:  &PlanetscaleDB{db},
 	}
 
-	log.Print(Start.Sprintf("Starting andthensome %s", version))
+	log.Print(Start.Sprintf("Starting andthensome %s %s", version, env))
 	log.Print(Start.Sprint("Server listening on :4000"))
 
 	mux := http.NewServeMux()
@@ -49,7 +49,7 @@ func main() {
 	// Only allow certain requests in Development environment only
 	if env == "DEV" {
 		mux.HandleFunc("/populate", server.PopulateHandler)
-		mux.HandleFunc("/delete", server.ClearTableHandler)
+		mux.HandleFunc("/delete", server.ClearTableHandler(server)) // Why?
 	}
 
 	if err := http.ListenAndServe(":4000", mux); err != nil {

@@ -115,22 +115,6 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 	}
 }
 
-// ClearTable clears a table's row of its column values. Resets it basically.
-func ClearTable(t ...*Table[Row[id, text]]) {
-	for _, table := range t {
-		for _, row := range table.Rows {
-			if row == nil {
-				continue
-			}
-			row.Col1 = 0
-			row.Col2 = ""
-			row.Col3 = ""
-			row.Col4 = ""
-			row.Col5 = ""
-		}
-	}
-}
-
 // populateIDs populates IDs given a new request to Reddit
 func populateIDs(t *Table[Row[id, text]], lastPosition int) {
 	for i, row := range t.Rows {

@@ -16,7 +16,12 @@ import (
 )
 
 // verb is a type of SQL verb
-type verb string
+type verb uint8
+
+const (
+	add verb = iota
+	delete
+)
 
 // Key represents credentials used to log in to APIs
 type Key struct{}
@@ -31,23 +36,14 @@ func (k *Key) NewKey() *reddit.Credentials {
 	}
 }
 
-type Rows []*Row[id, text]
-type DBTable *Table[Row[id, text]]
-
-type DBModel interface {
-	insertToSQL(tableName string, tableRows Rows) error
-	RetrieveSQL(tables ...DBTable) error
-	UpdateSQL(planetscale, reddit DBTable, v verb) error
-}
-
 type PlanetscaleDB struct {
 	*sql.DB
 }
 
-// InsertToSQL creates a string consisting of all the rows
+// Insert creates a string consisting of all the rows
 // in a given table, and executes the query, inserting
 // the items into the Planetscale database.
-func (p *PlanetscaleDB) insertToSQL(tableName string, tableRows Rows) error {
+func (p *PlanetscaleDB) Insert(tableName string, tableRows Rows) error {
 	var query string
 	var inserts []string
 	var params []interface{}
@@ -112,7 +108,8 @@ func (p *PlanetscaleDB) insertToSQL(tableName string, tableRows Rows) error {
 	return nil
 }
 
-func (p *PlanetscaleDB) DeleteRowsFromSQL(tableName string) error {
+// Delete deletes all rows from a specified table.
+func (p *PlanetscaleDB) Delete(tableName string) error {
 	query, err := p.Query("DELETE FROM " + tableName)
 	if err != nil {
 		return err
@@ -121,9 +118,9 @@ func (p *PlanetscaleDB) DeleteRowsFromSQL(tableName string) error {
 	return nil
 }
 
-// RetrieveSQL stores the most recent n rows from a PlanetscaleDB table
+// Retrieve stores the most recent n rows from a PlanetscaleDB table
 // into the parameterized table.
-func (p *PlanetscaleDB) RetrieveSQL(tables ...DBTable) error {
+func (p *PlanetscaleDB) Retrieve(tables ...DBTable) error {
 	for _, table := range tables {
 		rows, err := p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT " + strconv.Itoa(ResultsPerRedditRequest))
 		if err != nil {
@@ -154,18 +151,19 @@ func (p *PlanetscaleDB) RetrieveSQL(tables ...DBTable) error {
 	return nil
 }
 
-// UpdateSQL compares the planetscale table and the reddit table,
+// Update compares the planetscale table and the reddit table,
 // and updates the planetscale database accordingly. This is essentially
 // a sync function that synchronizes the planetscale database
 // and the Reddit saved posts list
-func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit DBTable, v verb) error {
+func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, v verb) error {
 
 	if planetscale.Name != reddit.Name {
 		return errors.New(Warn.Sprintf("these tables are not the same"))
 	}
 
+	// TODO make a test for case: add
 	switch v {
-	case "ADD":
+	case add:
 		msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
 		mostRecentIDOnPlanetscale := p.getLastId(planetscale.Name)
 		entries := entriesToAdd(
@@ -180,16 +178,15 @@ func (p *PlanetscaleDB) UpdateSQL(planetscale, reddit DBTable, v verb) error {
 			for i := 0; i < entries; i++ {
 				reddit.Rows[i].Col1 = mostRecentIDOnPlanetscale + id(entries-i)
 			}
-			p.insertToSQL(planetscale.Name, reddit.Rows[0:entries])
+			p.Insert(planetscale.Name, reddit.Rows)
 		}
-	case "DELETE":
+	case delete:
 		msg := Information.Sprint("Deleted rows from SQL tables")
-		if err := p.DeleteRowsFromSQL(planetscale.Name); err != nil {
+		if err := p.Delete(planetscale.Name); err != nil {
 			return errors.New(Warn.Sprintf("Could not delete tables: %s", err))
 		} else {
 			log.Print(msg)
 		}
-
 	default:
 		return errors.New(Warn.Sprint("no operation provided in UpdateSQL()"))
 	}

@@ -20,7 +20,7 @@ Docker run command:
 - [x] SQL Comparison function
 - [x] Setup webserver
 - [x] Use a docker container for API calls
-- [ ] Deletion function for SQL db
+- [x] Deletion function for SQL db
 - [ ] Log planetscale updates to webpage
 
 
