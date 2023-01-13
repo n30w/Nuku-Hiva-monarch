@@ -54,17 +54,6 @@ func (s *Server) PopulateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ClearTableHandler handles clearing tables requests
-// func (s *Server) ClearTableHandler(w http.ResponseWriter, r *http.Request) {
-// 	w.Write([]byte(Result.Sprintf("Cleared all rows from all tables\n")))
-// 	if err := s.Update(s.DBPosts, s.RedditPosts, delete); err != nil {
-// 		fmt.Println(err)
-// 	}
-
-// 	if err := s.Update(s.DBComments, s.RedditComments, delete); err != nil {
-// 		fmt.Println(err)
-// 	}
-// }
-
 func (s *Server) ClearTableHandler(db RelationalDB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(Result.Sprintf("Cleared all rows from all tables\n")))

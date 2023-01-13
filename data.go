@@ -17,6 +17,10 @@ func (i *id) String() string {
 	return fmt.Sprintf("%d", i)
 }
 
+func (s *state) String() string {
+	return fmt.Sprintf("%T", s)
+}
+
 // Col defines column types in SQL Database
 type Col interface {
 	id | text | date | state
@@ -33,8 +37,8 @@ type Row[I Col, T Col] struct {
 
 func (r *Row[I, T]) String() string {
 	return fmt.Sprintf(
-		"[%T, %T, %T, %T, %T]",
-		r.Col1, r.Col2, r.Col3, r.Col4, r.Col5,
+		"[%T, %T, %T, %T, %T]\n",
+		&r.Col1, &r.Col2, &r.Col3, &r.Col4, &r.Col5,
 	)
 }
 
@@ -65,7 +69,7 @@ func (t *Table[Row]) String() string {
 	return sb.String()
 }
 
-// ClearTable clears a table's row of its column values. Resets it basically.
+// ClearTables clears a table's row of its column values. Resets it basically.
 func ClearTables(t ...DBTable) {
 	for _, table := range t {
 		for _, row := range table.Rows {
