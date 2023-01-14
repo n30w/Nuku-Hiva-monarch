@@ -8,7 +8,7 @@ RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o andthensome .
 
 # distributed image
-FROM alpine:3.14
+FROM alpine:latest
 COPY --from=builder /build/andthensome .
 
 EXPOSE 80
