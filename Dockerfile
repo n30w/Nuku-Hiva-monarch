@@ -5,7 +5,7 @@ RUN mkdir /build
 ADD . /build
 WORKDIR /build
 RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o andthensome .
+RUN CGO_ENABLED=0 GOARCH=arm64 GOOS=linux go build -ldflags="-s -w" -o andthensome .
 
 # distributed image
 FROM alpine:latest
