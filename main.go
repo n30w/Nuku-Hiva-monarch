@@ -45,10 +45,10 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", server.UpdateHandler)
-	mux.HandleFunc("/areyouawake", server.AwakeHandler)
 
 	// Only allow certain requests in Development environment only
 	if env == "DEV" {
+		mux.HandleFunc("/areyouawake", server.AwakeHandler)
 		mux.HandleFunc("/populate", server.PopulateHandler)
 		mux.HandleFunc("/delete", server.ClearTableHandler(server)) // Why?
 	}

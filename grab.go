@@ -115,8 +115,10 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 	}
 }
 
-// populateIDs populates IDs given a new request to Reddit
-func populateIDs(t *Table[Row[id, text]], lastPosition int) {
+// populateIDs populates IDs given a new request to Reddit.
+// This is used to either refresh a database from the beginning,
+// or assign new IDs to additional saved posts to be put into the database.
+func populateIDs(t DBTable, lastPosition int) {
 	for i, row := range t.Rows {
 		if row == nil {
 			break

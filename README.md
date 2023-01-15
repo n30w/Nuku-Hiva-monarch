@@ -22,6 +22,7 @@ Docker run command:
 - [x] Use a docker container for API calls
 - [x] Deletion function for SQL db
 - [ ] Implement Go Routines and channels for faster performance (blazingly fast you could say)
+- [ ] Benchmark Tests for receiving data
 - [ ] Log planetscale updates to webpage
 
 ## Links

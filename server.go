@@ -53,6 +53,8 @@ func (s *Server) PopulateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// AwakeHandler is a route that is used in development.
+// Testing uses this route to check if the server is reachable.
 func (s *Server) AwakeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(Result.Sprintf("Yes, I am awake and accessible. Nice to see you.")))
 }

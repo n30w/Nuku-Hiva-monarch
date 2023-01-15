@@ -55,7 +55,7 @@ func (p *PlanetscaleDB) Insert(tableName string, tableRows Rows) error {
 	case "comments":
 		query = "INSERT INTO comments (id, author, body, url, subreddit) VALUES "
 	default:
-		return errors.New("not a valid table name")
+		return errors.New("table does not exist")
 	}
 
 	for _, row := range tableRows {
