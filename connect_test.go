@@ -11,7 +11,7 @@ func Test_entriesToAdd(t *testing.T) {
 
 	planetscale[0] = &Row[id, text]{Col3: "18"}
 
-	t.Run("addition of n entries", func(t *testing.T) {
+	t.Run("addition of n > 0 entries", func(t *testing.T) {
 		want := 5
 		reddit[want] = &Row[id, text]{Col3: "18"}
 
