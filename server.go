@@ -53,6 +53,10 @@ func (s *Server) PopulateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *Server) AwakeHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(Result.Sprintf("Yes, I am awake and accessible. Nice to see you.")))
+}
+
 // ClearTableHandler handles clearing tables requests
 func (s *Server) ClearTableHandler(db RelationalDB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
