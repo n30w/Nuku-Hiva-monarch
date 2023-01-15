@@ -70,7 +70,7 @@ func (t *Table[Row]) String() string {
 }
 
 // ClearTables clears a table's row of its column values. Resets it basically.
-func ClearTables(t ...DBTable) {
+func ClearTables(t ...DBTable) { // TODO go routine optimization can occur here
 	for _, table := range t {
 		for _, row := range table.Rows {
 			if row == nil {

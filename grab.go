@@ -73,6 +73,7 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 			log.Fatal(Warn.Sprint(err))
 		}
 
+		// TODO go routine optimization can occur here
 		for _, post := range mySavedPosts {
 			postsTable.Rows[lastPos1] = &Row[id, text]{
 				0,
@@ -84,6 +85,7 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 			lastPos1++
 		}
 
+		// TODO go routine optimization can occur here
 		for _, comment := range mySavedComments {
 			commentsTable.Rows[lastPos2] = &Row[id, text]{
 				0,

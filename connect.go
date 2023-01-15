@@ -162,7 +162,7 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, v verb) error {
 	}
 
 	// TODO make a test for case: add
-	switch v {
+	switch v { // TODO go routine optimization can occur here
 	case add:
 		msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
 		mostRecentIDOnPlanetscale := p.getLastId(planetscale.Name)
