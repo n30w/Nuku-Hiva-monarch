@@ -44,13 +44,14 @@ func main() {
 	log.Print(Start.Sprint("Server listening on :4000"))
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", server.UpdateHandler)
+	mux.HandleFunc("/api/update", server.UpdateHandler)
+	mux.HandleFunc("/api/scananddelete", server.ScanAndDeleteHandler)
 
 	// Only allow certain requests in Development environment only
 	if env == "DEV" {
-		mux.HandleFunc("/areyouawake", server.AwakeHandler)
-		mux.HandleFunc("/populate", server.PopulateHandler)
-		mux.HandleFunc("/delete", server.ClearTableHandler(server)) // Why?
+		mux.HandleFunc("/api/areyouawake", server.AwakeHandler)
+		mux.HandleFunc("/api/populate", server.PopulateHandler)
+		mux.HandleFunc("/api/delete", server.ClearTableHandler(server)) // Why?
 	}
 
 	if err := http.ListenAndServe(":4000", mux); err != nil {
