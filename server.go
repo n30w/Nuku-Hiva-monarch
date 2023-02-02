@@ -17,7 +17,7 @@ func (s *Server) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	GrabSaved(s.RedditPosts, s.RedditComments, s.Key)
 
-	err = s.Retrieve(s.DBPosts, s.DBComments)
+	err = s.Retrieve(some, s.DBPosts, s.DBComments)
 	if err != nil {
 		w.Write([]byte(fmt.Sprintf("%s\n", err)))
 		log.Fatal(err)
@@ -56,7 +56,19 @@ func (s *Server) PopulateHandler(w http.ResponseWriter, r *http.Request) {
 // AwakeHandler is a route that is used in development.
 // Testing uses this route to check if the server is reachable.
 func (s *Server) AwakeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(Result.Sprintf("Yes, I am awake and accessible. Nice to see you.")))
+	w.Write([]byte(Result.Sprintf("Yes, I am awake and accessible. Nice to see you.\n")))
+}
+
+// ScanAndDeleteHandler will scan the database for entries that are duplicate and delete them.
+func (s *Server) ScanAndDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	err := s.ScanAndDelete()
+	if err != nil {
+		w.Write([]byte(fmt.Sprint(err)))
+		fmt.Println(err)
+	} else {
+		w.Write([]byte(Result.Sprintf("Scanned and Deleted\n")))
+	}
+
 }
 
 // ClearTableHandler handles clearing tables requests
