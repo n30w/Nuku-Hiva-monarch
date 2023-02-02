@@ -15,7 +15,7 @@ import (
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
-// verb is a type of SQL verb
+// verb is a type of SQL verb.
 type verb uint8
 
 const (
@@ -23,10 +23,19 @@ const (
 	delete
 )
 
-// Key represents credentials used to log in to APIs
+// amount represents an amount of objects.
+type amount uint8
+
+const (
+	all amount = iota
+	some
+	distinct
+)
+
+// Key represents credentials used to log in to APIs.
 type Key struct{}
 
-// NewKey returns a new key given environment variables
+// NewKey returns a new key given environment variables.
 func (k *Key) NewKey() *reddit.Credentials {
 	return &reddit.Credentials{
 		ID:       os.Getenv("ID"),
@@ -36,6 +45,9 @@ func (k *Key) NewKey() *reddit.Credentials {
 	}
 }
 
+// PlanetscaleDB wraps an SQL Database provided by Go,
+// since the functionality of the remote database I'm using, which
+// is Planetscale, is exactly the same.
 type PlanetscaleDB struct {
 	*sql.DB
 }
@@ -120,18 +132,43 @@ func (p *PlanetscaleDB) Delete(tableName string) error {
 
 // Retrieve stores the most recent n rows from a PlanetscaleDB table
 // into the parameterized table.
-func (p *PlanetscaleDB) Retrieve(tables ...DBTable) error {
+func (p *PlanetscaleDB) Retrieve(amount amount, tables ...DBTable) error {
 	for _, table := range tables {
-		rows, err := p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT " + strconv.Itoa(ResultsPerRedditRequest))
+
+		var rows *sql.Rows
+		var err error
+
+		switch amount {
+		case all:
+			rows, err = p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT 10000")
+		case some:
+			rows, err = p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT " + strconv.Itoa(ResultsPerRedditRequest))
+		case distinct:
+			switch table.Name {
+			case "posts": // select distinct ... from ... group by ...
+				rows, err = p.Query("SELECT id, name, url, subreddit, media_url FROM (SELECT name, url, subreddit, media_url, MAX(id) id FROM `posts` GROUP BY name, url, subreddit, media_url) A ORDER BY id")
+			case "comments":
+				rows, err = p.Query("SELECT id, author, body, url, subreddit FROM (SELECT author, body, url, subreddit, MAX(id) id FROM `comments` GROUP BY author, body, url, subreddit) A ORDER BY id")
+
+			default:
+				return errors.New("invalid table name")
+			}
+
+		default:
+			return errors.New("connect.go: amount parameter must be 'all' or 'some'")
+		}
+
 		if err != nil {
 			return err
 		}
+
 		defer rows.Close()
 
 		i := 0
+
 		for rows.Next() {
 			table.Rows[i] = &Row[id, text]{}
-			err := rows.Scan(
+			err = rows.Scan(
 				&table.Rows[i].Col1,
 				&table.Rows[i].Col2,
 				&table.Rows[i].Col3,
@@ -194,9 +231,60 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, v verb) error {
 	return nil
 }
 
+// ScanAndDelete retrieves entries from the SQL database,
+// and deletes the duplicate ones, regardless of ID number.
+func (p *PlanetscaleDB) ScanAndDelete() error {
+
+	if err := p.deleteDuplicates(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// deleteDuplicates deletes duplicate entries in the database
+func (p *PlanetscaleDB) deleteDuplicates() error {
+
+	// Checkout this thread:
+	// https://dba.stackexchange.com/questions/19511/getting-unique-names-when-the-ids-are-different-distinct
+
+	// Query to delete duplicate rows
+	// DELETE FROM comments
+	// WHERE id NOT IN (
+	// SELECT id FROM (SELECT MAX(id) id FROM `comments` GROUP BY body) A ORDER BY id
+	// );
+
+	if _, err := p.Query("DELETE FROM posts WHERE id NOT IN (SELECT id FROM (SELECT MAX(id) id FROM `posts` GROUP BY url) A ORDER BY id)"); err != nil {
+		return err
+	}
+
+	log.Println("Deleted duplicate rows from posts")
+
+	if _, err := p.Query("DELETE FROM posts WHERE url LIKE ''"); err != nil {
+		return err
+	}
+
+	log.Println("Deleted rows with empty content from posts")
+
+	if _, err := p.Query("DELETE FROM comments WHERE id NOT IN (SELECT id FROM (SELECT MAX(id) id FROM `comments` GROUP BY body) A ORDER BY id)"); err != nil {
+		return err
+	}
+
+	log.Println("Deleted duplicate rows from comments")
+
+	if _, err := p.Query("DELETE FROM comments WHERE url LIKE ''"); err != nil {
+		return err
+	}
+
+	log.Println("Deleted rows with empty content from comments")
+
+	return nil
+}
+
 // getLastID makes a query to the SQL database and returns the latest ID
 func (p *PlanetscaleDB) getLastId(name string) id {
 	rows, err := p.Query("SELECT MAX(id) FROM " + name)
+
 	if err != nil {
 		log.Fatal(Warn.Sprint(err))
 	}
