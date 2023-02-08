@@ -192,31 +192,51 @@ func (p *PlanetscaleDB) Retrieve(amount amount, tables ...DBTable) error {
 // and updates the planetscale database accordingly. This is essentially
 // a sync function that synchronizes the planetscale database
 // and the Reddit saved posts list
-func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, v verb) error {
+func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb verb) error {
 
 	if planetscale.Name != reddit.Name {
 		return errors.New(Warn.Sprintf("these tables are not the same"))
 	}
 
 	// TODO make a test for case: add
-	switch v { // TODO go routine optimization can occur here
+	switch verb { // TODO go routine optimization can occur here
 	case add:
 		msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
-		mostRecentIDOnPlanetscale := p.getLastId(planetscale.Name)
-		entries := entriesToAdd(
-			planetscale.Rows[0:ResultsPerRedditRequest],
-			reddit.Rows[0:ResultsPerRedditRequest],
-		)
 
-		if entries == 0 {
-			log.Print(msg)
-			return nil
-		} else {
-			for i := 0; i < entries; i++ {
-				reddit.Rows[i].Col1 = mostRecentIDOnPlanetscale + id(entries-i)
-			}
-			p.Insert(planetscale.Name, reddit.Rows)
+		insertion := &Table[Row[id, text]]{Name: planetscale.Name}
+
+		// inventory is a map of current rows on the SQL database.
+		inventory := map[text]bool{}
+
+		if err := p.Retrieve(some, planetscale); err != nil {
+			return err
 		}
+
+		for _, row := range planetscale.Rows {
+			inventory[row.Col4] = true
+		}
+
+		// index keeps track of current row
+		index := 0
+		for _, row := range reddit.Rows {
+			// if the row doesn't exist in inventory, add it to the insertion table.
+			if !inventory[row.Col4] {
+				insertion.Rows[index] = &Row[id, text]{
+					Col1: row.Col1, // Might need to change the ID
+					Col2: row.Col2,
+					Col3: row.Col3,
+					Col4: row.Col4,
+					Col5: row.Col5,
+				}
+
+				index++
+			}
+		}
+
+		// Finally, insert new rows into SQL database.
+
+		log.Print(msg)
+
 	case delete:
 		msg := Information.Sprint("Deleted rows from SQL tables")
 		if err := p.Delete(planetscale.Name); err != nil {
@@ -224,6 +244,7 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, v verb) error {
 		} else {
 			log.Print(msg)
 		}
+
 	default:
 		return errors.New(Warn.Sprint("no operation provided in UpdateSQL()"))
 	}

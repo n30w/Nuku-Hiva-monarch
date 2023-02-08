@@ -13,3 +13,8 @@ populate:
 	curl localhost:4000/populate
 
 all: make run
+
+test:
+	clear
+	go run .
+	go test -v

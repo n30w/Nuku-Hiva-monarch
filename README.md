@@ -30,3 +30,4 @@ Docker run command:
 - [How to get more JSON Results](https://old.reddit.com/r/redditdev/comments/d7egb/how_to_get_more_json_results_i_get_only_30/)
 - [SQL Go Create Table Insert Row](https://golangbot.com/mysql-create-table-insert-row/)
 - [Go Docker Tutorial](https://tutorialedge.net/golang/go-docker-tutorial/)
+- [SQL Getting UNique Names when IDS are different](https://dba.stackexchange.com/questions/19511/getting-unique-names-when-the-ids-are-different-distinct)

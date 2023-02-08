@@ -43,12 +43,12 @@ func (r *Row[I, T]) String() string {
 }
 
 type DBTable *Table[Row[id, text]]
-type Rows [1000]*Row[id, text]
+type Rows [10000]*Row[id, text]
 
 type RelationalDB interface {
 	Insert(tableName string, tableRows Rows) error
 	Delete(tableName string) error
-	Retrieve(tables ...DBTable) error
+	Retrieve(amount amount, tables ...DBTable) error
 	Update(planetscale, reddit DBTable, v verb) error
 }
 
@@ -83,4 +83,25 @@ func ClearTables(t ...DBTable) { // TODO go routine optimization can occur here
 			row.Col5 = ""
 		}
 	}
+}
+
+// CreateTable instantiates and returns a pointer to a populated table with zero values.
+func CreateTable(name string) DBTable {
+	return createTable(name)
+}
+
+func createTable(name string) DBTable {
+	table := &Table[Row[id, text]]{Name: name}
+
+	for i := 0; i < len(table.Rows); i++ {
+		table.Rows[i] = &Row[id, text]{
+			0,
+			"",
+			"",
+			"",
+			"",
+		}
+	}
+
+	return table
 }

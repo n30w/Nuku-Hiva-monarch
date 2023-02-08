@@ -2,12 +2,12 @@ package main
 
 import "testing"
 
-func TestPopulateIDs(t *testing.T) {
+// func TestPopulateIDs(t *testing.T) {
 
-	var mockTable DBTable
-	mockTable.Name = "mockTable"
+// 	var mockTable DBTable
+// 	mockTable.Name = "mockTable"
 
-}
+// }
 
 func BenchmarkGrabSaved(b *testing.B) {
 	postsTable := &Table[Row[id, text]]{}

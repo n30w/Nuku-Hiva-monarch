@@ -103,6 +103,8 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 		time.Sleep(1 * time.Second) // Its recommend to hit Reddit with only 1 request/sec
 	}
 
+	// TODO rework ID numbering system, causes synchronization issues
+	// with the planetscale database.
 	if PleasePopulateIDs {
 		populateIDs(postsTable, lastPos1)
 		populateIDs(commentsTable, lastPos2)
