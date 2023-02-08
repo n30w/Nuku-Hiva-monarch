@@ -202,6 +202,7 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb verb) error {
 	case add:
 		msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
 
+		// insertion are the new rows to insert into the database.
 		insertion := &Table[Row[id, text]]{Name: planetscale.Name}
 
 		// inventory is a map of current rows on the SQL database.
@@ -215,13 +216,13 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb verb) error {
 			inventory[row.Col4] = true
 		}
 
-		// index keeps track of current row
+		// index keeps track of current row.
 		index := 0
 		for _, row := range reddit.Rows {
 			// if the row doesn't exist in inventory, add it to the insertion table.
 			if !inventory[row.Col4] {
 				insertion.Rows[index] = &Row[id, text]{
-					Col1: row.Col1, // Might need to change the ID
+					// Col1: row.Col1, // Might need to change the ID.
 					Col2: row.Col2,
 					Col3: row.Col3,
 					Col4: row.Col4,
@@ -233,6 +234,7 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb verb) error {
 		}
 
 		// Finally, insert new rows into SQL database.
+		p.Insert(planetscale.Name, insertion.Rows)
 
 		log.Print(msg)
 
