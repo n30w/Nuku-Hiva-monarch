@@ -202,41 +202,56 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb verb) error {
 	case add:
 		msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
 
-		// insertion are the new rows to insert into the database.
-		insertion := &Table[Row[id, text]]{Name: planetscale.Name}
+		// insertion contains the new rows to insert into the database.
+		insertion := Table[Row[id, text]]{Name: planetscale.Name}
 
 		// inventory is a map of current rows on the SQL database.
-		inventory := map[text]bool{}
+		inventory := make(map[text]bool)
 
 		if err := p.Retrieve(some, planetscale); err != nil {
 			return err
 		}
 
+		// This loop adds the planetscale rows to the inventory to check later.
 		for _, row := range planetscale.Rows {
-			inventory[row.Col4] = true
+			if row == nil {
+				continue
+			}
+
+			inventory[row.Col3] = true
 		}
 
 		// index keeps track of current row.
 		index := 0
 		for _, row := range reddit.Rows {
+			if row == nil {
+				continue
+			}
 			// if the row doesn't exist in inventory, add it to the insertion table.
-			if !inventory[row.Col4] {
+			if !inventory[row.Col3] {
 				insertion.Rows[index] = &Row[id, text]{
 					// Col1: row.Col1, // Might need to change the ID.
-					Col2: row.Col2,
-					Col3: row.Col3,
-					Col4: row.Col4,
-					Col5: row.Col5,
+					row.Col1,
+					row.Col2,
+					row.Col3,
+					row.Col4,
+					row.Col5,
 				}
 
 				index++
 			}
 		}
 
-		// Finally, insert new rows into SQL database.
-		p.Insert(planetscale.Name, insertion.Rows)
+		// if there are no new rows, tell the user.
+		if index == 0 {
+			log.Print(msg)
+			return nil
+		}
 
-		log.Print(msg)
+		// Finally, insert new rows into SQL database.
+		if err := p.Insert(planetscale.Name, insertion.Rows); err != nil {
+			return err
+		}
 
 	case delete:
 		msg := Information.Sprint("Deleted rows from SQL tables")
