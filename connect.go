@@ -59,13 +59,13 @@ func (p *PlanetscaleDB) Insert(tableName string, tableRows Rows) error {
 	var query string
 	var inserts []string
 	var params []interface{}
-	insertion := "(?, ?, ?, ?, ?)"
+	insertion := "(?, ?, ?, ?)"
 
 	switch tableName {
 	case "posts":
-		query = "INSERT INTO posts (id, name, url, subreddit, media_url) VALUES "
+		query = "INSERT INTO posts (name, url, subreddit, media_url) VALUES "
 	case "comments":
-		query = "INSERT INTO comments (id, author, body, url, subreddit) VALUES "
+		query = "INSERT INTO comments (author, body, url, subreddit) VALUES "
 	default:
 		return errors.New("table does not exist")
 	}
@@ -77,7 +77,6 @@ func (p *PlanetscaleDB) Insert(tableName string, tableRows Rows) error {
 		inserts = append(inserts, insertion)
 		params = append(
 			params,
-			row.Col1,
 			row.Col2,
 			row.Col3,
 			row.Col4,
