@@ -43,7 +43,7 @@ func (r *Row[I, T]) String() string {
 }
 
 type DBTable *Table[Row[id, text]]
-type Rows [10000]*Row[id, text]
+type Rows [1000]*Row[id, text]
 
 type RelationalDB interface {
 	Insert(tableName string, tableRows Rows) error
