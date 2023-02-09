@@ -23,7 +23,6 @@ Docker run command:
 - [x] Deletion function for SQL db
 - [ ] Log planetscale updates to webpage
 
-
 ## Links
 
 - [How to get more JSON Results](https://old.reddit.com/r/redditdev/comments/d7egb/how_to_get_more_json_results_i_get_only_30/)
