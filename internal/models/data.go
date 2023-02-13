@@ -47,8 +47,8 @@ type Rows [1000]*Row[id, text]
 type RelationalDB interface {
 	Insert(tableName string, tableRows Rows) error
 	Delete(tableName string) error
-	Retrieve(amount amount, tables ...DBTable) error
-	Update(planetscale, reddit DBTable, v verb) error
+	Retrieve(amount Amount, tables ...DBTable) error
+	Update(planetscale, reddit DBTable, v Verb) error
 }
 
 // Table represents an SQL table: it has a name and rows
