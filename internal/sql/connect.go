@@ -13,6 +13,7 @@ import (
 	_ "github.com/go-sql-driver/mysql" // The underscore will autoload the dependency.
 	// Do not need to call something like "godotenv.Load()"
 	"github.com/n30w/andthensome/internal/models"
+	"github.com/n30w/andthensome/internal/style"
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
@@ -39,7 +40,7 @@ type PlanetscaleDB struct {
 // Insert creates a string consisting of all the rows
 // in a given table, and executes the query, inserting
 // the items into the Planetscale database.
-func (p *PlanetscaleDB) Insert(tableName string, tableRows Rows) error {
+func (p *PlanetscaleDB) Insert(tableName string, tableRows models.Rows) error {
 	var query string
 	var inserts []string
 	var params []interface{}
@@ -79,7 +80,7 @@ func (p *PlanetscaleDB) Insert(tableName string, tableRows Rows) error {
 	statement, err := p.PrepareContext(ctx, query)
 
 	if err != nil {
-		log.Print(Warn.Sprintf("Error %s when preparing SQL statement", err))
+		log.Print(style.Warn.Sprintf("Error %s when preparing SQL statement", err))
 		return err
 	}
 
@@ -87,18 +88,18 @@ func (p *PlanetscaleDB) Insert(tableName string, tableRows Rows) error {
 
 	res, err := statement.ExecContext(ctx, params...)
 	if err != nil {
-		log.Print(Warn.Sprintf("Error %s when inserting row into products table", err))
+		log.Print(style.Warn.Sprintf("Error %s when inserting row into products table", err))
 		return err
 	}
 
 	rows, err := res.RowsAffected()
 
 	if err != nil {
-		log.Print(Warn.Sprintf("Error %s when finding rows affected", err))
+		log.Print(style.Warn.Sprintf("Error %s when finding rows affected", err))
 		return err
 	}
 
-	log.Print(Result.Sprintf("%d rows created in %s", rows, tableName))
+	log.Print(style.Result.Sprintf("%d rows created in %s", rows, tableName))
 
 	return nil
 }
@@ -178,13 +179,13 @@ func (p *PlanetscaleDB) Retrieve(amount models.Amount, tables ...DBTable) error 
 func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb models.Verb) error {
 
 	if planetscale.Name != reddit.Name {
-		return errors.New(Warn.Sprintf("these tables are not the same"))
+		return errors.New(style.Warn.Sprintf("these tables are not the same"))
 	}
 
 	// TODO make a test for case: add
 	switch verb { // TODO go routine optimization can occur here
 	case models.Add:
-		msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
+		msg := style.Information.Sprint("No new rows must be added to " + planetscale.Name)
 
 		// insertion contains the new rows to insert into the database.
 		insertion := Table[Row[id, text]]{Name: planetscale.Name}
@@ -192,7 +193,7 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb models.Verb) er
 		// inventory is a map of current rows on the SQL database.
 		inventory := make(map[text]bool)
 
-		if err := p.Retrieve(some, planetscale); err != nil {
+		if err := p.Retrieve(models.Some, planetscale); err != nil {
 			return err
 		}
 
@@ -238,15 +239,15 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb models.Verb) er
 		}
 
 	case models.Delete:
-		msg := Information.Sprint("Deleted rows from SQL tables")
+		msg := style.Information.Sprint("Deleted rows from SQL tables")
 		if err := p.Delete(planetscale.Name); err != nil {
-			return errors.New(Warn.Sprintf("Could not delete tables: %s", err))
+			return errors.New(style.Warn.Sprintf("Could not delete tables: %s", err))
 		} else {
 			log.Print(msg)
 		}
 
 	default:
-		return errors.New(Warn.Sprint("no operation provided in UpdateSQL()"))
+		return errors.New(style.Warn.Sprint("no operation provided in UpdateSQL()"))
 	}
 
 	return nil
@@ -307,7 +308,7 @@ func (p *PlanetscaleDB) getLastId(name string) id {
 	rows, err := p.Query("SELECT MAX(id) FROM " + name)
 
 	if err != nil {
-		log.Fatal(Warn.Sprint(err))
+		log.Fatal(style.Warn.Sprint(err))
 	}
 	defer rows.Close()
 
@@ -315,12 +316,12 @@ func (p *PlanetscaleDB) getLastId(name string) id {
 	for rows.Next() {
 		err := rows.Scan(&max)
 		if err != nil {
-			log.Fatal(Warn.Sprint(err))
+			log.Fatal(style.Warn.Sprint(err))
 		}
 	}
 
 	if err = rows.Err(); err != nil {
-		log.Fatal(Warn.Sprint(err))
+		log.Fatal(style.Warn.Sprint(err))
 	}
 
 	return id(max)
