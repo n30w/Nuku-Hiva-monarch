@@ -42,8 +42,8 @@ func main() {
 		PlanetscaleDB:  &PlanetscaleDB{db},
 	}
 
-	log.Print(Start.Sprintf("Starting andthensome %s %s", version, env))
-	log.Print(Start.Sprint("Server listening on :4000"))
+	log.Print(style.Start.Sprintf("Starting andthensome %s %s", version, env))
+	log.Print(style.Start.Sprint("Server listening on :4000"))
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/update", server.UpdateHandler)

@@ -18,3 +18,6 @@ test:
 	clear
 	go run .
 	go test -v
+
+lint:
+	golangci-lint run

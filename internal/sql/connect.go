@@ -12,24 +12,8 @@ import (
 
 	_ "github.com/go-sql-driver/mysql" // The underscore will autoload the dependency.
 	// Do not need to call something like "godotenv.Load()"
+	"github.com/n30w/andthensome/internal/models"
 	"github.com/vartanbeno/go-reddit/v2/reddit"
-)
-
-// verb is a type of SQL verb.
-type verb uint8
-
-const (
-	add verb = iota
-	delete
-)
-
-// amount represents an amount of objects.
-type amount uint8
-
-const (
-	all amount = iota
-	some
-	distinct
 )
 
 // Key represents credentials used to log in to APIs.
@@ -131,18 +115,18 @@ func (p *PlanetscaleDB) Delete(tableName string) error {
 
 // Retrieve stores the most recent n rows from a PlanetscaleDB table
 // into the parameterized table.
-func (p *PlanetscaleDB) Retrieve(amount amount, tables ...DBTable) error {
+func (p *PlanetscaleDB) Retrieve(amount models.Amount, tables ...DBTable) error {
 	for _, table := range tables {
 
 		var rows *sql.Rows
 		var err error
 
 		switch amount {
-		case all:
+		case models.All:
 			rows, err = p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT 10000")
-		case some:
+		case models.Some:
 			rows, err = p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT " + strconv.Itoa(ResultsPerRedditRequest))
-		case distinct:
+		case models.Distinct:
 			switch table.Name {
 			case "posts": // select distinct ... from ... group by ...
 				rows, err = p.Query("SELECT id, name, url, subreddit, media_url FROM (SELECT name, url, subreddit, media_url, MAX(id) id FROM `posts` GROUP BY name, url, subreddit, media_url) A ORDER BY id")
@@ -191,7 +175,7 @@ func (p *PlanetscaleDB) Retrieve(amount amount, tables ...DBTable) error {
 // and updates the planetscale database accordingly. This is essentially
 // a sync function that synchronizes the planetscale database
 // and the Reddit saved posts list
-func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb verb) error {
+func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb models.Verb) error {
 
 	if planetscale.Name != reddit.Name {
 		return errors.New(Warn.Sprintf("these tables are not the same"))
@@ -199,7 +183,7 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb verb) error {
 
 	// TODO make a test for case: add
 	switch verb { // TODO go routine optimization can occur here
-	case add:
+	case models.Add:
 		msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
 
 		// insertion contains the new rows to insert into the database.
@@ -253,7 +237,7 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb verb) error {
 			return err
 		}
 
-	case delete:
+	case models.Delete:
 		msg := Information.Sprint("Deleted rows from SQL tables")
 		if err := p.Delete(planetscale.Name); err != nil {
 			return errors.New(Warn.Sprintf("Could not delete tables: %s", err))

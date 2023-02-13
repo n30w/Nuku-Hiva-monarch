@@ -4,18 +4,23 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/n30w/andthensome/internal/models"
+	"github.com/n30w/andthensome/internal/reddit"
+	"github.com/n30w/andthensome/internal/sql"
+	"github.com/n30w/andthensome/internal/style"
 )
 
 type Server struct {
 	RedditPosts, RedditComments, DBPosts, DBComments *Table[Row[id, text]]
 	Key                                              *Key
-	*PlanetscaleDB
+	*sql.PlanetscaleDB
 }
 
 // UpdateHandler handles updating SQL database requests
 func (s *Server) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
-	GrabSaved(s.RedditPosts, s.RedditComments, s.Key)
+	reddit.GrabSaved(s.RedditPosts, s.RedditComments, s.Key)
 
 	err = s.Retrieve(some, s.DBPosts, s.DBComments)
 	if err != nil {
@@ -35,13 +40,13 @@ func (s *Server) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	w.Write([]byte(Result.Sprintf("Successfully updated Planetscale Database\n")))
+	w.Write([]byte(style.Result.Sprintf("Successfully updated Planetscale Database\n")))
 	ClearTables(s.RedditPosts, s.RedditComments, s.DBPosts, s.DBComments)
 }
 
 // PopulateHandler handles populating tables requests
 func (s *Server) PopulateHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(Result.Sprintf("Successfully populated Planetscale Database\n")))
+	w.Write([]byte(style.Result.Sprintf("Successfully populated Planetscale Database\n")))
 	GrabSaved(s.RedditPosts, s.RedditComments, s.Key)
 
 	if err := s.Insert(s.RedditPosts.Name, s.RedditPosts.Rows); err != nil {
@@ -56,7 +61,7 @@ func (s *Server) PopulateHandler(w http.ResponseWriter, r *http.Request) {
 // AwakeHandler is a route that is used in development.
 // Testing uses this route to check if the server is reachable.
 func (s *Server) AwakeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(Result.Sprintf("Yes, I am awake and accessible. Nice to see you.\n")))
+	w.Write([]byte(style.Result.Sprintf("Yes, I am awake and accessible. Nice to see you.\n")))
 }
 
 // ScanAndDeleteHandler will scan the database for entries that are duplicate and delete them.
@@ -66,15 +71,15 @@ func (s *Server) ScanAndDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(fmt.Sprint(err)))
 		fmt.Println(err)
 	} else {
-		w.Write([]byte(Result.Sprintf("Scanned and Deleted\n")))
+		w.Write([]byte(style.Result.Sprintf("Scanned and Deleted\n")))
 	}
 
 }
 
 // ClearTableHandler handles clearing tables requests
-func (s *Server) ClearTableHandler(db RelationalDB) func(w http.ResponseWriter, r *http.Request) {
+func (s *Server) ClearTableHandler(db models.RelationalDB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(Result.Sprintf("Cleared all rows from all tables\n")))
+		w.Write([]byte(style.Result.Sprintf("Cleared all rows from all tables\n")))
 		if err := db.Update(s.DBPosts, s.RedditPosts, delete); err != nil {
 			fmt.Println(err)
 		}
