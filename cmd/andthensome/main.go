@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/n30w/andthensome/internal/style"
+
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -24,11 +26,11 @@ func main() {
 	var err error
 	db, err = sql.Open("mysql", os.Getenv(env))
 	if err != nil {
-		panic(Warn.Sprint(err))
+		panic(style.Warn.Sprint(err))
 	}
 
 	if err := db.Ping(); err != nil {
-		panic(Warn.Sprint(err))
+		panic(style.Warn.Sprint(err))
 	}
 
 	server := &Server{
@@ -56,6 +58,6 @@ func main() {
 
 	if err := http.ListenAndServe(":4000", mux); err != nil {
 		fmt.Print(err)
-		log.Fatal(Warn.Sprint(err))
+		log.Fatal(style.Warn.Sprint(err))
 	}
 }

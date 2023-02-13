@@ -1,6 +1,5 @@
 // Package for anything that handles data
-
-package main
+package models
 
 import (
 	"fmt"
