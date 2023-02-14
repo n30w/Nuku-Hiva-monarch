@@ -39,6 +39,26 @@ type Row[I col, T col] struct {
 	Col5 T
 }
 
+func (r *Row[I, T]) NewRow(i uint64, col2, col3, col4, col5 string) *Row[id, text] {
+	return r.newRow(
+		id(i),
+		text(col2),
+		text(col3),
+		text(col4),
+		text(col5),
+	)
+}
+
+func (r *Row[I, T]) newRow(i id, col2, col3, col4, col5 text) *Row[id, text] {
+	return &Row[id, text]{
+		Col1: i,
+		Col2: col2,
+		Col3: col3,
+		Col4: col4,
+		Col5: col5,
+	}
+}
+
 func (r *Row[I, T]) String() string {
 	return fmt.Sprintf(
 		"[%T, %T, %T, %T, %T]\n",
@@ -53,6 +73,17 @@ type Rows [1000]*Row[id, text]
 type Table[T Row[id, text]] struct {
 	Name string
 	Rows Rows
+}
+
+// NewTable creates and returns a new table for use.
+func NewTable(name string) *Table[Row[id, text]] {
+	return newTable(name)
+}
+
+func newTable(name string) *Table[Row[id, text]] {
+	return &Table[Row[id, text]]{
+		Name: name,
+	}
 }
 
 func (t *Table[Row]) String() string {
