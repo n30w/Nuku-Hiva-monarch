@@ -12,17 +12,22 @@ type id uint64
 type date time.Time
 type state bool
 
-func (i *id) String() string {
+type Text text
+type Id id
+type Date date
+type State state
+
+func (i *Id) String() string {
 	return fmt.Sprintf("%d", i)
 }
 
-func (s *state) String() string {
+func (s *State) String() string {
 	return fmt.Sprintf("%T", s)
 }
 
 // Col defines column types in SQL Database
 type Col interface {
-	id | text | date | state
+	Id | Text | Date | State
 }
 
 // Row defines a row in an SQL table
@@ -41,18 +46,11 @@ func (r *Row[I, T]) String() string {
 	)
 }
 
-type DBTable *Table[Row[id, text]]
-type Rows [1000]*Row[id, text]
-
-type RelationalDB interface {
-	Insert(tableName string, tableRows Rows) error
-	Delete(tableName string) error
-	Retrieve(amount Amount, tables ...DBTable) error
-	Update(planetscale, reddit DBTable, v Verb) error
-}
+type DBTable *Table[Row[Id, Text]]
+type Rows [1000]*Row[Id, Text]
 
 // Table represents an SQL table: it has a name and rows
-type Table[T Row[id, text]] struct {
+type Table[T Row[Id, Text]] struct {
 	Name string
 	Rows Rows
 }
@@ -69,8 +67,12 @@ func (t *Table[Row]) String() string {
 }
 
 // ClearTables clears a table's row of its column values. Resets it basically.
-func ClearTables(t ...DBTable) { // TODO go routine optimization can occur here
-	for _, table := range t {
+func ClearTables(tables ...DBTable) { // TODO go routine optimization can occur here
+	clearTables(tables)
+}
+
+func clearTables(tables []DBTable) {
+	for _, table := range tables {
 		for _, row := range table.Rows {
 			if row == nil {
 				continue
@@ -90,10 +92,10 @@ func CreateTable(name string) DBTable {
 }
 
 func createTable(name string) DBTable {
-	table := &Table[Row[id, text]]{Name: name}
+	table := &Table[Row[Id, Text]]{Name: name}
 
 	for i := 0; i < len(table.Rows); i++ {
-		table.Rows[i] = &Row[id, text]{
+		table.Rows[i] = &Row[Id, Text]{
 			0,
 			"",
 			"",

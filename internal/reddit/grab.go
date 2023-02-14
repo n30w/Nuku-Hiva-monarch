@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/n30w/andthensome/internal/models"
+	"github.com/n30w/andthensome/internal/style"
 	"github.com/theckman/yacspin"
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
@@ -27,7 +29,7 @@ var (
 
 // GrabSaved reads all cached posts on the Reddit account.
 // This can be used to mass refresh an entire SQL database.
-func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
+func GrabSaved(postsTable, commentsTable *models.Table[models.Row[models.id, text]], key *models.Key) {
 
 	var mySavedPosts []*reddit.Post
 	var mySavedComments []*reddit.Comment
@@ -60,9 +62,9 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 	client, err := reddit.NewClient(*key.NewKey(), reddit.WithHTTPClient(httpClient))
 
 	if err != nil {
-		log.Println(Warn.Sprint("Login failed :("))
+		log.Println(style.Warn.Sprint("Login failed :("))
 	} else {
-		log.Println(Information.Sprint("Contacting Reddit API..."))
+		log.Println(style.Information.Sprint("Contacting Reddit API..."))
 	}
 
 	_ = spinner.Start()
@@ -70,7 +72,7 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 	for i := 0; i < totalRequests; i++ {
 		mySavedPosts, mySavedComments, response, err = client.User.Saved(ctx, opts)
 		if err != nil {
-			log.Fatal(Warn.Sprint(err))
+			log.Fatal(style.Warn.Sprint(err))
 		}
 
 		// TODO go routine optimization can occur here
@@ -112,17 +114,17 @@ func GrabSaved(postsTable, commentsTable *Table[Row[id, text]], key *Key) {
 
 	_ = spinner.Stop()
 
-	log.Print(Result.Sprint("Saved posts and comments retrieved"))
+	log.Print(style.Result.Sprint("Saved posts and comments retrieved"))
 	// log.Print(Result.Sprintf("Comments: %x", commentsTable.Rows))
 	if err != nil {
-		log.Fatal(Warn.Sprint(err))
+		log.Fatal(style.Warn.Sprint(err))
 	}
 }
 
 // populateIDs populates IDs given a new request to Reddit.
 // This is used to either refresh a database from the beginning,
 // or assign new IDs to additional saved posts to be put into the database.
-func populateIDs(t DBTable, lastPosition int) {
+func populateIDs(t models.DBTable, lastPosition int) {
 	for i, row := range t.Rows {
 		if row == nil {
 			break

@@ -7,7 +7,7 @@ import (
 
 func TestClearTables(t *testing.T) {
 
-	table := &Table[Row[id, text]]{
+	table := &Table[Row[Id, Text]]{
 		Name: "test table",
 	}
 
@@ -15,12 +15,12 @@ func TestClearTables(t *testing.T) {
 
 	// Fill with dummy data
 	for i := 0; i < 1000; i++ {
-		table.Rows[i] = &Row[id, text]{
-			Col1: id(i),
-			Col2: text(fmt.Sprintf("%d", i)),
-			Col3: text(fmt.Sprintf("%d", i)),
-			Col4: text(fmt.Sprintf("%d", i)),
-			Col5: text(fmt.Sprintf("%d", i)),
+		table.Rows[i] = &Row[Id, Text]{
+			Col1: Id(i),
+			Col2: Text(fmt.Sprintf("%d", i)),
+			Col3: Text(fmt.Sprintf("%d", i)),
+			Col4: Text(fmt.Sprintf("%d", i)),
+			Col5: Text(fmt.Sprintf("%d", i)),
 		}
 		comparison[i] = i
 	}
@@ -29,7 +29,7 @@ func TestClearTables(t *testing.T) {
 
 	// Compare data
 	for i := 1; i < 1000; i++ {
-		if table.Rows[i].Col1 == id(comparison[i]) {
+		if table.Rows[i].Col1 == Id(comparison[i]) {
 			t.Errorf("got occupied table, data remains at index %d", i)
 		}
 	}

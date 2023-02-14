@@ -116,7 +116,7 @@ func (p *PlanetscaleDB) Delete(tableName string) error {
 
 // Retrieve stores the most recent n rows from a PlanetscaleDB table
 // into the parameterized table.
-func (p *PlanetscaleDB) Retrieve(amount models.Amount, tables ...DBTable) error {
+func (p *PlanetscaleDB) Retrieve(amount models.Amount, tables ...models.DBTable) error {
 	for _, table := range tables {
 
 		var rows *sql.Rows
@@ -176,7 +176,7 @@ func (p *PlanetscaleDB) Retrieve(amount models.Amount, tables ...DBTable) error 
 // and updates the planetscale database accordingly. This is essentially
 // a sync function that synchronizes the planetscale database
 // and the Reddit saved posts list
-func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb models.Verb) error {
+func (p *PlanetscaleDB) Update(planetscale, reddit models.DBTable, verb models.Verb) error {
 
 	if planetscale.Name != reddit.Name {
 		return errors.New(style.Warn.Sprintf("these tables are not the same"))
@@ -188,7 +188,7 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb models.Verb) er
 		msg := style.Information.Sprint("No new rows must be added to " + planetscale.Name)
 
 		// insertion contains the new rows to insert into the database.
-		insertion := Table[Row[id, text]]{Name: planetscale.Name}
+		insertion := models.Table[models.Row[id, text]]{Name: planetscale.Name}
 
 		// inventory is a map of current rows on the SQL database.
 		inventory := make(map[text]bool)
