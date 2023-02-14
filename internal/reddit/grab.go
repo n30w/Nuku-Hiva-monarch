@@ -28,7 +28,7 @@ var (
 )
 
 // GrabSaved reads all cached posts on the Reddit account.
-// This can be used to mass refresh an entire SQL database.
+// This can be used to mass refresh an entire SQL database. //TODO make this return error
 func GrabSaved(postsTable, commentsTable *models.Table[Row[models.Id, models.Text]], key *models.Key) {
 
 	var mySavedPosts []*reddit.Post

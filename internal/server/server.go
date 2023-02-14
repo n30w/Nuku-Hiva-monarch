@@ -12,8 +12,8 @@ import (
 
 type Server struct {
 	RedditPosts, RedditComments, DBPosts, DBComments *models.Table[models.Row[id, text]]
-	Key                                              *Key
-	*PlanetscaleDB
+	Key                                              *models.Key
+	*models.SQL
 }
 
 // UpdateHandler handles updating SQL database requests
