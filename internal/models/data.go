@@ -39,8 +39,8 @@ type Row[I col, T col] struct {
 	Col5 T
 }
 
-func (r *Row[I, T]) NewRow(i uint64, col2, col3, col4, col5 string) *Row[id, text] {
-	return r.newRow(
+func NewRow(i int, col2, col3, col4, col5 string) *Row[id, text] {
+	return newRow(
 		id(i),
 		text(col2),
 		text(col3),
@@ -49,7 +49,7 @@ func (r *Row[I, T]) NewRow(i uint64, col2, col3, col4, col5 string) *Row[id, tex
 	)
 }
 
-func (r *Row[I, T]) newRow(i id, col2, col3, col4, col5 text) *Row[id, text] {
+func newRow(i id, col2, col3, col4, col5 text) *Row[id, text] {
 	return &Row[id, text]{
 		Col1: i,
 		Col2: col2,
