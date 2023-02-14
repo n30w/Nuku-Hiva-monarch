@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/n30w/andthensome/internal/credentials"
 	"github.com/n30w/andthensome/internal/models"
 	"github.com/n30w/andthensome/internal/reddit"
 	"github.com/n30w/andthensome/internal/style"
@@ -12,7 +13,7 @@ import (
 
 type Server struct {
 	RedditPosts, RedditComments, DBPosts, DBComments *models.Table[models.Row[id, text]]
-	Key                                              *models.Key
+	Key                                              *credentials.Key
 	*models.SQL
 }
 
@@ -40,7 +41,7 @@ func (s *Server) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte(style.Result.Sprintf("Successfully updated Planetscale Database\n")))
-	ClearTables(s.RedditPosts, s.RedditComments, s.DBPosts, s.DBComments)
+	models.ClearTables(s.RedditPosts, s.RedditComments, s.DBPosts, s.DBComments)
 }
 
 // PopulateHandler handles populating tables requests

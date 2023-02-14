@@ -1,6 +1,11 @@
 package reddit
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/n30w/andthensome/internal/credentials"
+	"github.com/n30w/andthensome/internal/models"
+)
 
 // func TestPopulateIDs(t *testing.T) {
 
@@ -10,9 +15,9 @@ import "testing"
 // }
 
 func BenchmarkGrabSaved(b *testing.B) {
-	postsTable := &Table[Row[id, text]]{}
-	commentsTable := &Table[Row[id, text]]{}
-	key := &Key{}
+	postsTable := models.NewTable("posts")
+	commentsTable := models.NewTable("comments")
+	key := credentials.NewKey()
 
 	for i := 0; i < b.N; i++ {
 		GrabSaved(postsTable, commentsTable, key)
