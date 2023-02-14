@@ -16,6 +16,8 @@ import (
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
+const ResultsPerRedditRequest = 50
+
 // Key represents credentials used to log in to APIs.
 type Key struct{}
 
