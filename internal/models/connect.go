@@ -1,4 +1,4 @@
-package sql
+package models
 
 import (
 	"context"
@@ -12,7 +12,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql" // The underscore will autoload the dependency.
 	// Do not need to call something like "godotenv.Load()"
-	"github.com/n30w/andthensome/internal/models"
 	"github.com/n30w/andthensome/internal/style"
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
@@ -40,7 +39,7 @@ type PlanetscaleDB struct {
 // Insert creates a string consisting of all the rows
 // in a given table, and executes the query, inserting
 // the items into the Planetscale database.
-func (p *PlanetscaleDB) Insert(tableName string, tableRows models.Rows) error {
+func (p *PlanetscaleDB) Insert(tableName string, tableRows Rows) error {
 	var query string
 	var inserts []string
 	var params []interface{}
@@ -116,18 +115,18 @@ func (p *PlanetscaleDB) Delete(tableName string) error {
 
 // Retrieve stores the most recent n rows from a PlanetscaleDB table
 // into the parameterized table.
-func (p *PlanetscaleDB) Retrieve(amount models.Amount, tables ...models.DBTable) error {
+func (p *PlanetscaleDB) Retrieve(amount Amount, tables ...DBTable) error {
 	for _, table := range tables {
 
 		var rows *sql.Rows
 		var err error
 
 		switch amount {
-		case models.All:
+		case All:
 			rows, err = p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT 10000")
-		case models.Some:
+		case Some:
 			rows, err = p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT " + strconv.Itoa(ResultsPerRedditRequest))
-		case models.Distinct:
+		case Distinct:
 			switch table.Name {
 			case "posts": // select distinct ... from ... group by ...
 				rows, err = p.Query("SELECT id, name, url, subreddit, media_url FROM (SELECT name, url, subreddit, media_url, MAX(id) id FROM `posts` GROUP BY name, url, subreddit, media_url) A ORDER BY id")
@@ -184,16 +183,16 @@ func (p *PlanetscaleDB) Update(planetscale, reddit models.DBTable, verb models.V
 
 	// TODO make a test for case: add
 	switch verb { // TODO go routine optimization can occur here
-	case models.Add:
+	case Add:
 		msg := style.Information.Sprint("No new rows must be added to " + planetscale.Name)
 
 		// insertion contains the new rows to insert into the database.
-		insertion := models.Table[models.Row[id, text]]{Name: planetscale.Name}
+		insertion := Table[Row[id, text]]{Name: planetscale.Name}
 
 		// inventory is a map of current rows on the SQL database.
 		inventory := make(map[text]bool)
 
-		if err := p.Retrieve(models.Some, planetscale); err != nil {
+		if err := p.Retrieve(Some, planetscale); err != nil {
 			return err
 		}
 
@@ -238,7 +237,7 @@ func (p *PlanetscaleDB) Update(planetscale, reddit models.DBTable, verb models.V
 			return err
 		}
 
-	case models.Delete:
+	case Delete:
 		msg := style.Information.Sprint("Deleted rows from SQL tables")
 		if err := p.Delete(planetscale.Name); err != nil {
 			return errors.New(style.Warn.Sprintf("Could not delete tables: %s", err))
