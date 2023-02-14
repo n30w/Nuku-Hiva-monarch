@@ -36,6 +36,13 @@ type PlanetscaleDB struct {
 	*sql.DB
 }
 
+type RelationalDB interface {
+	Insert(tableName string, tableRows Rows) error
+	Delete(tableName string) error
+	Retrieve(amount Amount, tables ...DBTable) error
+	Update(planetscale, reddit DBTable, v Verb) error
+}
+
 // Insert creates a string consisting of all the rows
 // in a given table, and executes the query, inserting
 // the items into the Planetscale database.
@@ -175,7 +182,7 @@ func (p *PlanetscaleDB) Retrieve(amount Amount, tables ...DBTable) error {
 // and updates the planetscale database accordingly. This is essentially
 // a sync function that synchronizes the planetscale database
 // and the Reddit saved posts list
-func (p *PlanetscaleDB) Update(planetscale, reddit models.DBTable, verb models.Verb) error {
+func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb Verb) error {
 
 	if planetscale.Name != reddit.Name {
 		return errors.New(style.Warn.Sprintf("these tables are not the same"))

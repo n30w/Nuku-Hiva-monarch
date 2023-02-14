@@ -20,10 +20,3 @@ const (
 	Some
 	Distinct
 )
-
-type RelationalDB interface {
-	Insert(tableName string, tableRows Rows) error
-	Delete(tableName string) error
-	Retrieve(amount Amount, tables ...DBTable) error
-	Update(planetscale, reddit DBTable, v Verb) error
-}

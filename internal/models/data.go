@@ -25,13 +25,13 @@ func (s *State) String() string {
 	return fmt.Sprintf("%T", s)
 }
 
-// Col defines column types in SQL Database
-type Col interface {
-	Id | Text | Date | State
+// col defines column types in SQL Database
+type col interface {
+	id | text | date | state
 }
 
 // Row defines a row in an SQL table
-type Row[I Col, T Col] struct {
+type Row[I col, T col] struct {
 	Col1 I
 	Col2 T
 	Col3 T
@@ -46,11 +46,11 @@ func (r *Row[I, T]) String() string {
 	)
 }
 
-type DBTable *Table[Row[Id, Text]]
-type Rows [1000]*Row[Id, Text]
+type DBTable *Table[Row[id, text]]
+type Rows [1000]*Row[id, text]
 
 // Table represents an SQL table: it has a name and rows
-type Table[T Row[Id, Text]] struct {
+type Table[T Row[id, text]] struct {
 	Name string
 	Rows Rows
 }
@@ -92,10 +92,10 @@ func CreateTable(name string) DBTable {
 }
 
 func createTable(name string) DBTable {
-	table := &Table[Row[Id, Text]]{Name: name}
+	table := &Table[Row[id, text]]{Name: name}
 
 	for i := 0; i < len(table.Rows); i++ {
-		table.Rows[i] = &Row[Id, Text]{
+		table.Rows[i] = &Row[id, text]{
 			0,
 			"",
 			"",
