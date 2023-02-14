@@ -31,10 +31,10 @@ func (k *Key) NewKey() *reddit.Credentials {
 	}
 }
 
-// PlanetscaleDB wraps an SQL Database provided by Go,
+// SQL wraps an SQL Database tools provided by Go standard pkg,
 // since the functionality of the remote database I'm using, which
 // is Planetscale, is exactly the same.
-type PlanetscaleDB struct {
+type SQL struct {
 	*sql.DB
 }
 
@@ -48,7 +48,7 @@ type RelationalDB interface {
 // Insert creates a string consisting of all the rows
 // in a given table, and executes the query, inserting
 // the items into the Planetscale database.
-func (p *PlanetscaleDB) Insert(tableName string, tableRows Rows) error {
+func (p *SQL) Insert(tableName string, tableRows Rows) error {
 	var query string
 	var inserts []string
 	var params []interface{}
@@ -113,7 +113,7 @@ func (p *PlanetscaleDB) Insert(tableName string, tableRows Rows) error {
 }
 
 // Delete deletes all rows from a specified table.
-func (p *PlanetscaleDB) Delete(tableName string) error {
+func (p *SQL) Delete(tableName string) error {
 	query, err := p.Query("DELETE FROM " + tableName)
 	if err != nil {
 		return err
@@ -122,9 +122,9 @@ func (p *PlanetscaleDB) Delete(tableName string) error {
 	return nil
 }
 
-// Retrieve stores the most recent n rows from a PlanetscaleDB table
+// Retrieve stores the most recent n rows from a SQL table
 // into the parameterized table.
-func (p *PlanetscaleDB) Retrieve(amount Amount, tables ...DBTable) error {
+func (p *SQL) Retrieve(amount Amount, tables ...DBTable) error {
 	for _, table := range tables {
 
 		var rows *sql.Rows
@@ -184,7 +184,7 @@ func (p *PlanetscaleDB) Retrieve(amount Amount, tables ...DBTable) error {
 // and updates the planetscale database accordingly. This is essentially
 // a sync function that synchronizes the planetscale database
 // and the Reddit saved posts list
-func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb Verb) error {
+func (p *SQL) Update(planetscale, reddit DBTable, verb Verb) error {
 
 	if planetscale.Name != reddit.Name {
 		return errors.New(style.Warn.Sprintf("these tables are not the same"))
@@ -263,7 +263,7 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb Verb) error {
 
 // ScanAndDelete retrieves entries from the SQL database,
 // and deletes the duplicate ones, regardless of ID number.
-func (p *PlanetscaleDB) ScanAndDelete() error {
+func (p *SQL) ScanAndDelete() error {
 
 	if err := p.deleteDuplicates(); err != nil {
 		return err
@@ -273,7 +273,7 @@ func (p *PlanetscaleDB) ScanAndDelete() error {
 }
 
 // deleteDuplicates deletes duplicate entries in the database
-func (p *PlanetscaleDB) deleteDuplicates() error {
+func (p *SQL) deleteDuplicates() error {
 
 	// Checkout this thread:
 	// https://dba.stackexchange.com/questions/19511/getting-unique-names-when-the-ids-are-different-distinct
@@ -312,7 +312,7 @@ func (p *PlanetscaleDB) deleteDuplicates() error {
 }
 
 // getLastID makes a query to the SQL database and returns the latest ID
-func (p *PlanetscaleDB) getLastId(name string) id {
+func (p *SQL) getLastId(name string) id {
 	rows, err := p.Query("SELECT MAX(id) FROM " + name)
 
 	if err != nil {
