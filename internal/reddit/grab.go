@@ -8,22 +8,10 @@ import (
 
 	"github.com/n30w/andthensome/internal/models"
 	"github.com/n30w/andthensome/internal/style"
-	"github.com/theckman/yacspin"
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
 var (
-	spinner, _ = yacspin.New(
-		yacspin.Config{
-			Frequency:       100 * time.Millisecond,
-			CharSet:         yacspin.CharSets[43],
-			Suffix:          " retrieving posts and comments",
-			SuffixAutoColon: true,
-			Message:         "", // Set this to the page "after" setting from struct
-			StopCharacter:   "✓",
-			StopColors:      []string{"fgGreen"},
-		},
-	)
 	ResultsPerRedditRequest = 50
 )
 
@@ -67,7 +55,7 @@ func GrabSaved(postsTable, commentsTable *models.Table[Row[models.Id, models.Tex
 		log.Println(style.Information.Sprint("Contacting Reddit API..."))
 	}
 
-	_ = spinner.Start()
+	_ = style.Spinner.Start()
 
 	for i := 0; i < totalRequests; i++ {
 		mySavedPosts, mySavedComments, response, err = client.User.Saved(ctx, opts)
@@ -99,7 +87,7 @@ func GrabSaved(postsTable, commentsTable *models.Table[Row[models.Id, models.Tex
 			lastPos2++
 		}
 
-		spinner.Message(opts.ListOptions.After)
+		style.Spinner.Message(opts.ListOptions.After)
 
 		opts.ListOptions.After = response.After
 		time.Sleep(1 * time.Second) // Its recommend to hit Reddit with only 1 request/sec
@@ -112,7 +100,7 @@ func GrabSaved(postsTable, commentsTable *models.Table[Row[models.Id, models.Tex
 		populateIDs(commentsTable, lastPos2)
 	}
 
-	_ = spinner.Stop()
+	_ = style.Spinner.Stop()
 
 	log.Print(style.Result.Sprint("Saved posts and comments retrieved"))
 	// log.Print(Result.Sprintf("Comments: %x", commentsTable.Rows))
