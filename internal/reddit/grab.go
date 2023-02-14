@@ -29,7 +29,7 @@ var (
 
 // GrabSaved reads all cached posts on the Reddit account.
 // This can be used to mass refresh an entire SQL database.
-func GrabSaved(postsTable, commentsTable *models.Table[models.Row[models.Id, models.Text]], key *models.Key) {
+func GrabSaved(postsTable, commentsTable *models.Table[Row[models.Id, models.Text]], key *models.Key) {
 
 	var mySavedPosts []*reddit.Post
 	var mySavedComments []*reddit.Comment
@@ -77,25 +77,25 @@ func GrabSaved(postsTable, commentsTable *models.Table[models.Row[models.Id, mod
 
 		// TODO go routine optimization can occur here
 		for _, post := range mySavedPosts {
-			postsTable.Rows[lastPos1] = &Row[id, text]{
+			postsTable.Rows[lastPos1] = models.NewRow(
 				0,
-				text(post.Title),
-				text(post.Permalink),
-				text(post.SubredditName),
-				text(post.URL),
-			}
+				post.Title,
+				post.Permalink,
+				post.SubredditName,
+				post.URL,
+			)
 			lastPos1++
 		}
 
 		// TODO go routine optimization can occur here
 		for _, comment := range mySavedComments {
-			commentsTable.Rows[lastPos2] = &Row[id, text]{
+			commentsTable.Rows[lastPos2] = models.NewRow(
 				0,
-				text(comment.Author),
-				text(comment.Body),
-				text(comment.Permalink),
-				text(comment.SubredditName),
-			}
+				comment.Author,
+				comment.Body,
+				comment.Permalink,
+				comment.SubredditName,
+			)
 			lastPos2++
 		}
 

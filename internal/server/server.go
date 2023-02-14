@@ -7,14 +7,13 @@ import (
 
 	"github.com/n30w/andthensome/internal/models"
 	"github.com/n30w/andthensome/internal/reddit"
-	"github.com/n30w/andthensome/internal/sql"
 	"github.com/n30w/andthensome/internal/style"
 )
 
 type Server struct {
 	RedditPosts, RedditComments, DBPosts, DBComments *models.Table[models.Row[id, text]]
 	Key                                              *Key
-	*sql.PlanetscaleDB
+	*PlanetscaleDB
 }
 
 // UpdateHandler handles updating SQL database requests

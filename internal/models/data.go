@@ -39,9 +39,10 @@ type Row[I col, T col] struct {
 	Col5 T
 }
 
-func NewRow(i int, col2, col3, col4, col5 string) *Row[id, text] {
+// NewRow returns a row object given column values.
+func NewRow(col1 int, col2, col3, col4, col5 string) *Row[id, text] {
 	return newRow(
-		id(i),
+		id(col1),
 		text(col2),
 		text(col3),
 		text(col4),
