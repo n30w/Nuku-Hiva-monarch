@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -13,23 +12,9 @@ import (
 	_ "github.com/go-sql-driver/mysql" // The underscore will autoload the dependency.
 	// Do not need to call something like "godotenv.Load()"
 	"github.com/n30w/andthensome/internal/style"
-	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
 const ResultsPerRedditRequest = 50
-
-// Key represents credentials used to log in to APIs.
-type Key struct{}
-
-// NewKey returns a new key given environment variables.
-func (k *Key) NewKey() *reddit.Credentials {
-	return &reddit.Credentials{
-		ID:       os.Getenv("ID"),
-		Secret:   os.Getenv("SECRET"),
-		Username: os.Getenv("USERNAME"),
-		Password: os.Getenv("PASSWORD"),
-	}
-}
 
 // SQL wraps an SQL Database tools provided by Go standard pkg,
 // since the functionality of the remote database I'm using, which

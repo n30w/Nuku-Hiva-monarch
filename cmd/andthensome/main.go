@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/n30w/andthensome/internal/credentials"
 	"github.com/n30w/andthensome/internal/style"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -23,8 +24,10 @@ var (
 )
 
 func main() {
+	key := credentials.NewKey()
+
 	var err error
-	db, err = sql.Open("mysql", os.Getenv(env))
+	db, err = sql.Open("mysql", key.SQLKey())
 	if err != nil {
 		panic(style.Warn.Sprint(err))
 	}
@@ -38,7 +41,7 @@ func main() {
 		RedditComments: &Table[Row[id, text]]{Name: "comments"},
 		DBPosts:        &Table[Row[id, text]]{Name: "posts"},
 		DBComments:     &Table[Row[id, text]]{Name: "comments"},
-		Key:            &Key{},
+		Key:            key.RedditKey(),
 		PlanetscaleDB:  &PlanetscaleDB{db},
 	}
 
