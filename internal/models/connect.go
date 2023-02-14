@@ -311,30 +311,6 @@ func (p *SQL) deleteDuplicates() error {
 	return nil
 }
 
-// getLastID makes a query to the SQL database and returns the latest ID
-func (p *SQL) getLastId(name string) id {
-	rows, err := p.Query("SELECT MAX(id) FROM " + name)
-
-	if err != nil {
-		log.Fatal(style.Warn.Sprint(err))
-	}
-	defer rows.Close()
-
-	var max int
-	for rows.Next() {
-		err := rows.Scan(&max)
-		if err != nil {
-			log.Fatal(style.Warn.Sprint(err))
-		}
-	}
-
-	if err = rows.Err(); err != nil {
-		log.Fatal(style.Warn.Sprint(err))
-	}
-
-	return id(max)
-}
-
 // entriesToAdd compares two rows, one from Planetscale and one from Reddit.
 // It returns an integer, which represents the number of rows to update.
 func entriesToAdd(planetscale, reddit []*Row[id, text]) int {
