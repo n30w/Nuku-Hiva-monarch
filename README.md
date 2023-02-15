@@ -14,6 +14,10 @@ Docker run command:
 
 ```docker run --env-file=env_vars --publish 4000:4000 andthensome```
 
+## Notes
+
+- Make sure to put .env file in the cmd/andthensome directory.
+
 ## TODO
 
 - [x] Store reddit credentials in .env file

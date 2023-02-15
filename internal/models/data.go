@@ -1,6 +1,5 @@
 // Package for anything that handles data
-
-package main
+package models
 
 import (
 	"fmt"
@@ -13,26 +12,52 @@ type id uint64
 type date time.Time
 type state bool
 
-func (i *id) String() string {
+type Text text
+type Id id
+type Date date
+type State state
+
+func (i *Id) String() string {
 	return fmt.Sprintf("%d", i)
 }
 
-func (s *state) String() string {
+func (s *State) String() string {
 	return fmt.Sprintf("%T", s)
 }
 
-// Col defines column types in SQL Database
-type Col interface {
+// col defines column types in SQL Database
+type col interface {
 	id | text | date | state
 }
 
 // Row defines a row in an SQL table
-type Row[I Col, T Col] struct {
+type Row[I col, T col] struct {
 	Col1 I
 	Col2 T
 	Col3 T
 	Col4 T
 	Col5 T
+}
+
+// NewRow returns a row object given column values.
+func NewRow(col1 int, col2, col3, col4, col5 string) *Row[id, text] {
+	return newRow(
+		id(col1),
+		text(col2),
+		text(col3),
+		text(col4),
+		text(col5),
+	)
+}
+
+func newRow(i id, col2, col3, col4, col5 text) *Row[id, text] {
+	return &Row[id, text]{
+		Col1: i,
+		Col2: col2,
+		Col3: col3,
+		Col4: col4,
+		Col5: col5,
+	}
 }
 
 func (r *Row[I, T]) String() string {
@@ -45,17 +70,21 @@ func (r *Row[I, T]) String() string {
 type DBTable *Table[Row[id, text]]
 type Rows [1000]*Row[id, text]
 
-type RelationalDB interface {
-	Insert(tableName string, tableRows Rows) error
-	Delete(tableName string) error
-	Retrieve(amount amount, tables ...DBTable) error
-	Update(planetscale, reddit DBTable, v verb) error
-}
-
 // Table represents an SQL table: it has a name and rows
 type Table[T Row[id, text]] struct {
 	Name string
 	Rows Rows
+}
+
+// NewTable creates and returns a new table for use.
+func NewTable(name string) *Table[Row[id, text]] {
+	return newTable(name)
+}
+
+func newTable(name string) *Table[Row[id, text]] {
+	return &Table[Row[id, text]]{
+		Name: name,
+	}
 }
 
 func (t *Table[Row]) String() string {
@@ -70,8 +99,12 @@ func (t *Table[Row]) String() string {
 }
 
 // ClearTables clears a table's row of its column values. Resets it basically.
-func ClearTables(t ...DBTable) { // TODO go routine optimization can occur here
-	for _, table := range t {
+func ClearTables(tables ...DBTable) { // TODO go routine optimization can occur here
+	clearTables(tables)
+}
+
+func clearTables(tables []DBTable) {
+	for _, table := range tables {
 		for _, row := range table.Rows {
 			if row == nil {
 				continue

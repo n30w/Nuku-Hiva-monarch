@@ -1,61 +1,44 @@
-package main
+package models
 
 import (
 	"context"
 	"database/sql"
 	"errors"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql" // The underscore will autoload the dependency.
 	// Do not need to call something like "godotenv.Load()"
-	"github.com/vartanbeno/go-reddit/v2/reddit"
+	"github.com/n30w/andthensome/internal/style"
 )
 
-// verb is a type of SQL verb.
-type verb uint8
+const ResultsPerRedditRequest = 50
 
-const (
-	add verb = iota
-	delete
-)
-
-// amount represents an amount of objects.
-type amount uint8
-
-const (
-	all amount = iota
-	some
-	distinct
-)
-
-// Key represents credentials used to log in to APIs.
-type Key struct{}
-
-// NewKey returns a new key given environment variables.
-func (k *Key) NewKey() *reddit.Credentials {
-	return &reddit.Credentials{
-		ID:       os.Getenv("ID"),
-		Secret:   os.Getenv("SECRET"),
-		Username: os.Getenv("USERNAME"),
-		Password: os.Getenv("PASSWORD"),
-	}
-}
-
-// PlanetscaleDB wraps an SQL Database provided by Go,
+// SQL wraps an SQL Database tools provided by Go standard pkg,
 // since the functionality of the remote database I'm using, which
 // is Planetscale, is exactly the same.
-type PlanetscaleDB struct {
+type SQL struct {
 	*sql.DB
+}
+
+// NewSQL returns a new SQL object.
+func NewSQL(db *sql.DB) *SQL {
+	return &SQL{DB: db}
+}
+
+type RelationalDB interface {
+	Insert(tableName string, tableRows Rows) error
+	Delete(tableName string) error
+	Retrieve(amount Amount, tables ...DBTable) error
+	Update(planetscale, reddit DBTable, v Verb) error
 }
 
 // Insert creates a string consisting of all the rows
 // in a given table, and executes the query, inserting
 // the items into the Planetscale database.
-func (p *PlanetscaleDB) Insert(tableName string, tableRows Rows) error {
+func (p *SQL) Insert(tableName string, tableRows Rows) error {
 	var query string
 	var inserts []string
 	var params []interface{}
@@ -95,7 +78,7 @@ func (p *PlanetscaleDB) Insert(tableName string, tableRows Rows) error {
 	statement, err := p.PrepareContext(ctx, query)
 
 	if err != nil {
-		log.Print(Warn.Sprintf("Error %s when preparing SQL statement", err))
+		log.Print(style.Warn.Sprintf("Error %s when preparing SQL statement", err))
 		return err
 	}
 
@@ -103,24 +86,24 @@ func (p *PlanetscaleDB) Insert(tableName string, tableRows Rows) error {
 
 	res, err := statement.ExecContext(ctx, params...)
 	if err != nil {
-		log.Print(Warn.Sprintf("Error %s when inserting row into products table", err))
+		log.Print(style.Warn.Sprintf("Error %s when inserting row into products table", err))
 		return err
 	}
 
 	rows, err := res.RowsAffected()
 
 	if err != nil {
-		log.Print(Warn.Sprintf("Error %s when finding rows affected", err))
+		log.Print(style.Warn.Sprintf("Error %s when finding rows affected", err))
 		return err
 	}
 
-	log.Print(Result.Sprintf("%d rows created in %s", rows, tableName))
+	log.Print(style.Result.Sprintf("%d rows created in %s", rows, tableName))
 
 	return nil
 }
 
 // Delete deletes all rows from a specified table.
-func (p *PlanetscaleDB) Delete(tableName string) error {
+func (p *SQL) Delete(tableName string) error {
 	query, err := p.Query("DELETE FROM " + tableName)
 	if err != nil {
 		return err
@@ -129,20 +112,20 @@ func (p *PlanetscaleDB) Delete(tableName string) error {
 	return nil
 }
 
-// Retrieve stores the most recent n rows from a PlanetscaleDB table
+// Retrieve stores the most recent n rows from a SQL table
 // into the parameterized table.
-func (p *PlanetscaleDB) Retrieve(amount amount, tables ...DBTable) error {
+func (p *SQL) Retrieve(amount Amount, tables ...DBTable) error {
 	for _, table := range tables {
 
 		var rows *sql.Rows
 		var err error
 
 		switch amount {
-		case all:
+		case All:
 			rows, err = p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT 10000")
-		case some:
+		case Some:
 			rows, err = p.Query("SELECT * FROM " + table.Name + " ORDER BY id DESC LIMIT " + strconv.Itoa(ResultsPerRedditRequest))
-		case distinct:
+		case Distinct:
 			switch table.Name {
 			case "posts": // select distinct ... from ... group by ...
 				rows, err = p.Query("SELECT id, name, url, subreddit, media_url FROM (SELECT name, url, subreddit, media_url, MAX(id) id FROM `posts` GROUP BY name, url, subreddit, media_url) A ORDER BY id")
@@ -191,16 +174,16 @@ func (p *PlanetscaleDB) Retrieve(amount amount, tables ...DBTable) error {
 // and updates the planetscale database accordingly. This is essentially
 // a sync function that synchronizes the planetscale database
 // and the Reddit saved posts list
-func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb verb) error {
+func (p *SQL) Update(planetscale, reddit DBTable, verb Verb) error {
 
 	if planetscale.Name != reddit.Name {
-		return errors.New(Warn.Sprintf("these tables are not the same"))
+		return errors.New(style.Warn.Sprintf("these tables are not the same"))
 	}
 
 	// TODO make a test for case: add
 	switch verb { // TODO go routine optimization can occur here
-	case add:
-		msg := Information.Sprint("No new rows must be added to " + planetscale.Name)
+	case Add:
+		msg := style.Information.Sprint("No new rows must be added to " + planetscale.Name)
 
 		// insertion contains the new rows to insert into the database.
 		insertion := Table[Row[id, text]]{Name: planetscale.Name}
@@ -208,7 +191,7 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb verb) error {
 		// inventory is a map of current rows on the SQL database.
 		inventory := make(map[text]bool)
 
-		if err := p.Retrieve(some, planetscale); err != nil {
+		if err := p.Retrieve(Some, planetscale); err != nil {
 			return err
 		}
 
@@ -253,16 +236,16 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb verb) error {
 			return err
 		}
 
-	case delete:
-		msg := Information.Sprint("Deleted rows from SQL tables")
+	case Delete:
+		msg := style.Information.Sprint("Deleted rows from SQL tables")
 		if err := p.Delete(planetscale.Name); err != nil {
-			return errors.New(Warn.Sprintf("Could not delete tables: %s", err))
+			return errors.New(style.Warn.Sprintf("Could not delete tables: %s", err))
 		} else {
 			log.Print(msg)
 		}
 
 	default:
-		return errors.New(Warn.Sprint("no operation provided in UpdateSQL()"))
+		return errors.New(style.Warn.Sprint("no operation provided in UpdateSQL()"))
 	}
 
 	return nil
@@ -270,7 +253,7 @@ func (p *PlanetscaleDB) Update(planetscale, reddit DBTable, verb verb) error {
 
 // ScanAndDelete retrieves entries from the SQL database,
 // and deletes the duplicate ones, regardless of ID number.
-func (p *PlanetscaleDB) ScanAndDelete() error {
+func (p *SQL) ScanAndDelete() error {
 
 	if err := p.deleteDuplicates(); err != nil {
 		return err
@@ -280,7 +263,7 @@ func (p *PlanetscaleDB) ScanAndDelete() error {
 }
 
 // deleteDuplicates deletes duplicate entries in the database
-func (p *PlanetscaleDB) deleteDuplicates() error {
+func (p *SQL) deleteDuplicates() error {
 
 	// Checkout this thread:
 	// https://dba.stackexchange.com/questions/19511/getting-unique-names-when-the-ids-are-different-distinct
@@ -316,30 +299,6 @@ func (p *PlanetscaleDB) deleteDuplicates() error {
 	log.Println("Deleted rows with empty content from comments")
 
 	return nil
-}
-
-// getLastID makes a query to the SQL database and returns the latest ID
-func (p *PlanetscaleDB) getLastId(name string) id {
-	rows, err := p.Query("SELECT MAX(id) FROM " + name)
-
-	if err != nil {
-		log.Fatal(Warn.Sprint(err))
-	}
-	defer rows.Close()
-
-	var max int
-	for rows.Next() {
-		err := rows.Scan(&max)
-		if err != nil {
-			log.Fatal(Warn.Sprint(err))
-		}
-	}
-
-	if err = rows.Err(); err != nil {
-		log.Fatal(Warn.Sprint(err))
-	}
-
-	return id(max)
 }
 
 // entriesToAdd compares two rows, one from Planetscale and one from Reddit.

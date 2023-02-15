@@ -1,4 +1,4 @@
-package main
+package models
 
 import (
 	"fmt"
@@ -7,21 +7,19 @@ import (
 
 func TestClearTables(t *testing.T) {
 
-	table := &Table[Row[id, text]]{
-		Name: "test table",
-	}
+	table := NewTable("test table")
 
 	comparison := [1000]int{}
 
 	// Fill with dummy data
 	for i := 0; i < 1000; i++ {
-		table.Rows[i] = &Row[id, text]{
-			Col1: id(i),
-			Col2: text(fmt.Sprintf("%d", i)),
-			Col3: text(fmt.Sprintf("%d", i)),
-			Col4: text(fmt.Sprintf("%d", i)),
-			Col5: text(fmt.Sprintf("%d", i)),
-		}
+		table.Rows[i] = NewRow(
+			i,
+			fmt.Sprintf("%d", i),
+			fmt.Sprintf("%d", i),
+			fmt.Sprintf("%d", i),
+			fmt.Sprintf("%d", i),
+		)
 		comparison[i] = i
 	}
 

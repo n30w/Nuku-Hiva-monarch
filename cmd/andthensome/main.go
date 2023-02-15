@@ -7,6 +7,11 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/n30w/andthensome/internal/credentials"
+	"github.com/n30w/andthensome/internal/models"
+	"github.com/n30w/andthensome/internal/server"
+	"github.com/n30w/andthensome/internal/style"
+
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -21,27 +26,24 @@ var (
 )
 
 func main() {
+	key := credentials.NewKey()
+
 	var err error
-	db, err = sql.Open("mysql", os.Getenv(env))
+	db, err = sql.Open("mysql", key.SQLKey())
 	if err != nil {
-		panic(Warn.Sprint(err))
+		panic(style.Warn.Sprint(err))
 	}
 
 	if err := db.Ping(); err != nil {
-		panic(Warn.Sprint(err))
+		panic(style.Warn.Sprint(err))
 	}
 
-	server := &Server{
-		RedditPosts:    &Table[Row[id, text]]{Name: "posts"},
-		RedditComments: &Table[Row[id, text]]{Name: "comments"},
-		DBPosts:        &Table[Row[id, text]]{Name: "posts"},
-		DBComments:     &Table[Row[id, text]]{Name: "comments"},
-		Key:            &Key{},
-		PlanetscaleDB:  &PlanetscaleDB{db},
-	}
+	dbModel := models.NewSQL(db)
 
-	log.Print(Start.Sprintf("Starting andthensome %s %s", version, env))
-	log.Print(Start.Sprint("Server listening on :4000"))
+	server := server.New(key, dbModel)
+
+	log.Print(style.Start.Sprintf("Starting andthensome %s %s", version, env))
+	log.Print(style.Start.Sprint("Server listening on :4000"))
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/update", server.UpdateHandler)
@@ -56,6 +58,6 @@ func main() {
 
 	if err := http.ListenAndServe(":4000", mux); err != nil {
 		fmt.Print(err)
-		log.Fatal(Warn.Sprint(err))
+		log.Fatal(style.Warn.Sprint(err))
 	}
 }
