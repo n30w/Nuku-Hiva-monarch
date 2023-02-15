@@ -30,11 +30,6 @@ func GrabSaved(postsTable, commentsTable models.DBTable, key *credentials.Key) {
 
 	totalRequests := 1
 
-	if PleasePopulateIDs {
-		ResultsPerRedditRequest = 100
-		totalRequests = 10
-	}
-
 	ctx := context.Background()
 	opts := &reddit.ListUserOverviewOptions{
 		ListOptions: reddit.ListOptions{
@@ -94,30 +89,11 @@ func GrabSaved(postsTable, commentsTable models.DBTable, key *credentials.Key) {
 		time.Sleep(1 * time.Second) // Its recommend to hit Reddit with only 1 request/sec
 	}
 
-	// TODO rework ID numbering system, causes synchronization issues
-	// with the planetscale database.
-	if PleasePopulateIDs {
-		populateIDs(postsTable, lastPos1)
-		populateIDs(commentsTable, lastPos2)
-	}
-
 	_ = style.Spinner.Stop()
 
 	log.Print(style.Result.Sprint("Saved posts and comments retrieved"))
 	// log.Print(Result.Sprintf("Comments: %x", commentsTable.Rows))
 	if err != nil {
 		log.Fatal(style.Warn.Sprint(err))
-	}
-}
-
-// populateIDs populates IDs given a new request to Reddit.
-// This is used to either refresh a database from the beginning,
-// or assign new IDs to additional saved posts to be put into the database.
-func populateIDs(t models.DBTable, lastPosition int) {
-	for i, row := range t.Rows {
-		if row == nil {
-			break
-		}
-		row.Col1 = id(lastPosition - i)
 	}
 }
