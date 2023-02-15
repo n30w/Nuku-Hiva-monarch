@@ -52,7 +52,7 @@ func (s *Server) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	w.Write([]byte(style.Result.Sprintf("Successfully updated Planetscale Database\n")))
+	w.Write([]byte(style.Result.Sprintf("Successfully updated database\n")))
 	models.ClearTables(s.RedditPosts, s.RedditComments, s.DBPosts, s.DBComments)
 }
 
