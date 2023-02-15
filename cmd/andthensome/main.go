@@ -41,7 +41,7 @@ func main() {
 		RedditComments: &Table[Row[id, text]]{Name: "comments"},
 		DBPosts:        &Table[Row[id, text]]{Name: "posts"},
 		DBComments:     &Table[Row[id, text]]{Name: "comments"},
-		Key:            key.RedditKey(),
+		Key:            key,
 		PlanetscaleDB:  &PlanetscaleDB{db},
 	}
 
