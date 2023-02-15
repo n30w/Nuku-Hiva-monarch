@@ -23,6 +23,11 @@ type SQL struct {
 	*sql.DB
 }
 
+// NewSQL returns a new SQL object.
+func NewSQL(db *sql.DB) *SQL {
+	return &SQL{DB: db}
+}
+
 type RelationalDB interface {
 	Insert(tableName string, tableRows Rows) error
 	Delete(tableName string) error
