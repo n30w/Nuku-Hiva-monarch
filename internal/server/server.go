@@ -1,6 +1,7 @@
 package server
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -17,8 +18,17 @@ type Server struct {
 	*models.SQL
 }
 
-func NewServer() *Server {
-	return &Server{}
+// NewServer returns a new server object.
+func NewServer(key *credentials.Key, db *sql.DB) *Server {
+	sql := &models.SQL{DB: db}
+	return &Server{
+		RedditPosts:    models.NewTable("posts"),
+		RedditComments: models.NewTable("comments"),
+		DBPosts:        models.NewTable("posts"),
+		DBComments:     models.NewTable("comments"),
+		Key:            key,
+		SQL:            sql,
+	}
 }
 
 // UpdateHandler handles updating SQL database requests

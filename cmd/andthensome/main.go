@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/n30w/andthensome/internal/credentials"
+	"github.com/n30w/andthensome/internal/models"
 	"github.com/n30w/andthensome/internal/style"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -37,10 +38,10 @@ func main() {
 	}
 
 	server := &Server{
-		RedditPosts:    &Table[Row[id, text]]{Name: "posts"},
-		RedditComments: &Table[Row[id, text]]{Name: "comments"},
-		DBPosts:        &Table[Row[id, text]]{Name: "posts"},
-		DBComments:     &Table[Row[id, text]]{Name: "comments"},
+		RedditPosts:    models.NewTable("posts"),
+		RedditComments: models.NewTable("comments"),
+		DBPosts:        models.NewTable("posts"),
+		DBComments:     models.NewTable("comments"),
 		Key:            key,
 		PlanetscaleDB:  &PlanetscaleDB{db},
 	}
