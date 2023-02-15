@@ -1,7 +1,6 @@
 package server
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -19,8 +18,7 @@ type Server struct {
 }
 
 // NewServer returns a new server object.
-func NewServer(key *credentials.Key, db *sql.DB) *Server {
-	sql := &models.SQL{DB: db}
+func New(key *credentials.Key, sql *models.SQL) *Server {
 	return &Server{
 		RedditPosts:    models.NewTable("posts"),
 		RedditComments: models.NewTable("comments"),
