@@ -12,7 +12,7 @@ import (
 )
 
 type Server struct {
-	RedditPosts, RedditComments, DBPosts, DBComments *models.Table[models.Row[id, text]]
+	RedditPosts, RedditComments, DBPosts, DBComments models.DBTable
 	Key                                              *credentials.Key
 	*models.SQL
 }
