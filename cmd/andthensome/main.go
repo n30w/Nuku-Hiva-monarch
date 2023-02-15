@@ -9,6 +9,7 @@ import (
 
 	"github.com/n30w/andthensome/internal/credentials"
 	"github.com/n30w/andthensome/internal/models"
+	"github.com/n30w/andthensome/internal/server"
 	"github.com/n30w/andthensome/internal/style"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -37,14 +38,9 @@ func main() {
 		panic(style.Warn.Sprint(err))
 	}
 
-	server := &Server{
-		RedditPosts:    models.NewTable("posts"),
-		RedditComments: models.NewTable("comments"),
-		DBPosts:        models.NewTable("posts"),
-		DBComments:     models.NewTable("comments"),
-		Key:            key,
-		PlanetscaleDB:  &PlanetscaleDB{db},
-	}
+	dbModel := models.NewSQL(db)
+
+	server := server.New(key, dbModel)
 
 	log.Print(style.Start.Sprintf("Starting andthensome %s %s", version, env))
 	log.Print(style.Start.Sprint("Server listening on :4000"))
