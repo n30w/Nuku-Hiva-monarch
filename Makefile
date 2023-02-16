@@ -22,4 +22,4 @@ vendoring:
 	go mod vendor
 
 docker:
-	docker build . -t andthensome:dev
+	./scripts/./docker-build.sh
