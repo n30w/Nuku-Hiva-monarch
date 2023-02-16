@@ -1,5 +1,4 @@
 *.txt
 .env
 .idea
-vendor
 env_vars
