@@ -16,3 +16,7 @@ test:
 
 lint:
 	golangci-lint run
+
+vendoring:
+	go mod tidy
+	go mod vendor
