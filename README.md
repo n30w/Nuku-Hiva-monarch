@@ -16,7 +16,7 @@ Docker run command:
 
 ## Notes
 
-- Make sure to put .env file in the cmd/andthensome directory.
+- Use ```make bin``` to create a binary, or ```make run``` to run it.
 
 ## TODO
 
