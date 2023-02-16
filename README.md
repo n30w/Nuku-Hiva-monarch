@@ -31,6 +31,7 @@ Docker run command:
 
 ## Links
 
+- [Multiarchitecture Build With GitHub Actions Docker](https://dev.to/cloudx/multi-arch-docker-images-the-easy-way-with-github-actions-4k54)
 - [How to get more JSON Results](https://old.reddit.com/r/redditdev/comments/d7egb/how_to_get_more_json_results_i_get_only_30/)
 - [SQL Go Create Table Insert Row](https://golangbot.com/mysql-create-table-insert-row/)
 - [Go Docker Tutorial](https://tutorialedge.net/golang/go-docker-tutorial/)
