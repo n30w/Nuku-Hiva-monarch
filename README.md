@@ -35,3 +35,4 @@ Docker run command:
 - [SQL Go Create Table Insert Row](https://golangbot.com/mysql-create-table-insert-row/)
 - [Go Docker Tutorial](https://tutorialedge.net/golang/go-docker-tutorial/)
 - [SQL Getting UNique Names when IDS are different](https://dba.stackexchange.com/questions/19511/getting-unique-names-when-the-ids-are-different-distinct)
+- [Learn Git Basics](https://nulab.com/learn/software-development/git-tutorial/git-basics/#undoing-changes)

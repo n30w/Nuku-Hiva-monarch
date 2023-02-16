@@ -9,10 +9,6 @@ run:
 	make bin
 	./${BINARY_NAME}
 
-populate:
-	make run
-	curl localhost:4000/populate
-
 all: make run
 
 test:
