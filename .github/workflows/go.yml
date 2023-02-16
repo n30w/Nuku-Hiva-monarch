@@ -21,7 +21,7 @@ jobs:
           go-version: 1.19
 
       - name: Build
-        run: go build -o andthensome./cmd/andthensome/main.go
+        run: go build -o andthensome ./cmd/andthensome/main.go
 
       - name: Test
         run: go test -v ./internal/**
