@@ -20,3 +20,6 @@ lint:
 vendoring:
 	go mod tidy
 	go mod vendor
+
+docker:
+	docker build . -t andthensome:dev
