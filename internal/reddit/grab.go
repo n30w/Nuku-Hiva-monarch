@@ -25,8 +25,7 @@ func GrabSaved(postsTable, commentsTable models.DBTable, key *credentials.Key) {
 	var response *reddit.Response
 
 	// Last position of for loops
-	lastPos1 := 0
-	lastPos2 := 0
+	lastPos1, lastPos2 := 0, 0
 
 	totalRequests := 1
 
