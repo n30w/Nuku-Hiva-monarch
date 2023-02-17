@@ -11,6 +11,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql" // The underscore will autoload the dependency.
 	// Do not need to call something like "godotenv.Load()"
+	"github.com/n30w/andthensome/internal/credentials"
 	"github.com/n30w/andthensome/internal/style"
 )
 
@@ -26,6 +27,12 @@ type SQL struct {
 // NewSQL returns a new SQL object.
 func NewSQL(db *sql.DB) *SQL {
 	return &SQL{DB: db}
+}
+
+// Open opens a new SQL connection.
+func Open(driverName string, auth credentials.Authenticator) (*sql.DB, error) {
+	db, err := sql.Open("mysql", auth.Use().(string))
+	return db, err
 }
 
 type RelationalDB interface {
