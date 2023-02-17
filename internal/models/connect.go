@@ -24,7 +24,7 @@ type SQL struct {
 	*sql.DB
 }
 
-// NewSQL returns a new SQL object.
+// NewSQL creates and returns a new SQL object.
 func NewSQL(db *sql.DB) *SQL {
 	return &SQL{DB: db}
 }

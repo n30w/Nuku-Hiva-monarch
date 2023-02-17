@@ -22,14 +22,16 @@ const (
 
 var (
 	env = os.Getenv("ENVIRONMENT")
+	err error
 	db  *sql.DB
+
+	// Key objects for authenticating with remote services.
+	sqlKey    = &credentials.SQLKey{}
+	redditKey = &credentials.RedditKey{}
 )
 
 func main() {
-	redditKey := &credentials.RedditKey{}
-	sqlKey := &credentials.SQLKey{}
 
-	var err error
 	db, err = models.Open("mysql", sqlKey)
 	if err != nil {
 		panic(style.Warn.Sprint(err))
