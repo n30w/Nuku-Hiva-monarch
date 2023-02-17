@@ -26,10 +26,11 @@ var (
 )
 
 func main() {
-	key := credentials.NewKey()
+	redditKey := &credentials.RedditKey{}
+	sqlKey := &credentials.SQLKey{}
 
 	var err error
-	db, err = sql.Open("mysql", key.SQLKey())
+	db, err = models.Open("mysql", sqlKey)
 	if err != nil {
 		panic(style.Warn.Sprint(err))
 	}
@@ -40,7 +41,7 @@ func main() {
 
 	dbModel := models.NewSQL(db)
 
-	server := server.New(key, dbModel)
+	server := server.New(redditKey, dbModel)
 
 	log.Print(style.Start.Sprintf("Starting andthensome %s %s", version, env))
 	log.Print(style.Start.Sprint("Server listening on :4000"))

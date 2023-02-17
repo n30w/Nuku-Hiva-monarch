@@ -20,7 +20,7 @@ var (
 
 // GrabSaved reads all cached posts on the Reddit account.
 // This can be used to mass refresh an entire SQL database.
-func GrabSaved(postsTable, commentsTable models.DBTable, key *credentials.Key) error {
+func GrabSaved(postsTable, commentsTable models.DBTable, key credentials.Authenticator) error {
 
 	var mySavedPosts []*reddit.Post
 	var mySavedComments []*reddit.Comment
@@ -42,7 +42,8 @@ func GrabSaved(postsTable, commentsTable models.DBTable, key *credentials.Key) e
 
 	// Establish connection to Reddit API
 	httpClient := &http.Client{Timeout: time.Second * 30}
-	client, err := reddit.NewClient(*key.RedditKey(), reddit.WithHTTPClient(httpClient))
+	redditKey := key.Use().(*reddit.Credentials)
+	client, err := reddit.NewClient(*redditKey, reddit.WithHTTPClient(httpClient))
 
 	if err != nil {
 		return errors.New("authentication with Reddit API failed:" + err.Error())

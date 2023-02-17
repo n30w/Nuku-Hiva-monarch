@@ -13,12 +13,12 @@ import (
 
 type Server struct {
 	RedditPosts, RedditComments, DBPosts, DBComments models.DBTable
-	Key                                              *credentials.Key
+	Key                                              credentials.Authenticator
 	*models.SQL
 }
 
 // New returns a new server object.
-func New(key *credentials.Key, sql *models.SQL) *Server {
+func New(key credentials.Authenticator, sql *models.SQL) *Server {
 	return &Server{
 		RedditPosts:    models.NewTable("posts"),
 		RedditComments: models.NewTable("comments"),
