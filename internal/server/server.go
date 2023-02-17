@@ -17,7 +17,7 @@ type Server struct {
 	*models.SQL
 }
 
-// NewServer returns a new server object.
+// New returns a new server object.
 func New(key *credentials.Key, sql *models.SQL) *Server {
 	return &Server{
 		RedditPosts:    models.NewTable("posts"),
@@ -32,7 +32,11 @@ func New(key *credentials.Key, sql *models.SQL) *Server {
 // UpdateHandler handles updating SQL database requests
 func (s *Server) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
-	reddit.GrabSaved(s.RedditPosts, s.RedditComments, s.Key)
+
+	err = reddit.GrabSaved(s.RedditPosts, s.RedditComments, s.Key)
+	if err != nil {
+		log.Println(style.Warn.Sprint(err))
+	}
 
 	err = s.Retrieve(models.Some, s.DBPosts, s.DBComments)
 	if err != nil {
