@@ -29,7 +29,7 @@ func NewSQL(db *sql.DB) *SQL {
 	return &SQL{DB: db}
 }
 
-// Open opens a new SQL connection.
+// Open opens a new connection to a database with an SQL Driver.
 func Open(driverName string, auth credentials.Authenticator) (*sql.DB, error) {
 	db, err := sql.Open("mysql", auth.Use().(string))
 	return db, err
@@ -40,6 +40,14 @@ type RelationalDB interface {
 	Delete(tableName string) error
 	Retrieve(amount Amount, tables ...DBTable) error
 	Update(planetscale, reddit DBTable, v Verb) error
+}
+
+// Operator performs CRUD operations.
+type Operator interface {
+	Create() error
+	Read() error
+	Update() error
+	Delete() error
 }
 
 // Insert creates a string consisting of all the rows

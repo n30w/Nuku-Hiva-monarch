@@ -53,6 +53,7 @@ func Saved(postsTable, commentsTable models.DBTable, key credentials.Authenticat
 
 	_ = style.Spinner.Start()
 
+	// From the API response, put data into defined structs for further processing.
 	for i := 0; i < totalRequests; i++ {
 		mySavedPosts, mySavedComments, response, err = client.User.Saved(ctx, opts)
 		if err != nil {

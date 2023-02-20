@@ -2,9 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
-	"net/http"
 	"os"
 
 	"github.com/n30w/andthensome/internal/credentials"
@@ -37,30 +34,16 @@ func main() {
 		panic(style.Warn.Sprint(err))
 	}
 
-	if err := db.Ping(); err != nil {
+	err := db.Ping()
+	if err != nil {
 		panic(style.Warn.Sprint(err))
 	}
 
 	dbModel := models.NewSQL(db)
 
-	server := server.New(redditKey, dbModel)
-
-	log.Print(style.Start.Sprintf("Starting andthensome %s %s", version, env))
-	log.Print(style.Start.Sprint("Server listening on :4000"))
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/api/update", server.UpdateHandler)
-	mux.HandleFunc("/api/scananddelete", server.ScanAndDeleteHandler)
-
-	// Only allow certain requests in Development environment only
-	if env == "DEV" {
-		mux.HandleFunc("/api/areyouawake", server.AwakeHandler)
-		mux.HandleFunc("/api/populate", server.PopulateHandler)
-		mux.HandleFunc("/api/delete", server.ClearTableHandler(server)) // Why?
+	err = server.New(redditKey, dbModel).Start(4000, env)
+	if err != nil {
+		panic(err)
 	}
 
-	if err := http.ListenAndServe(":4000", mux); err != nil {
-		fmt.Print(err)
-		log.Fatal(style.Warn.Sprint(err))
-	}
 }
