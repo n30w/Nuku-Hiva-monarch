@@ -20,7 +20,7 @@ func BenchmarkGrabSaved(b *testing.B) {
 	key := &credentials.RedditKey{}
 
 	for i := 0; i < b.N; i++ {
-		GrabSaved(postsTable, commentsTable, key)
+		Saved(postsTable, commentsTable, key)
 	}
 
 }

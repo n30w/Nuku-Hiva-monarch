@@ -33,7 +33,7 @@ func New(key credentials.Authenticator, sql *models.SQL) *Server {
 func (s *Server) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 
-	err = reddit.GrabSaved(s.RedditPosts, s.RedditComments, s.Key)
+	err = reddit.Saved(s.RedditPosts, s.RedditComments, s.Key)
 	if err != nil {
 		log.Println(style.Warn.Sprint(err))
 	}
@@ -63,7 +63,7 @@ func (s *Server) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 // PopulateHandler handles populating tables requests
 func (s *Server) PopulateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(style.Result.Sprintf("Successfully populated Planetscale Database\n"))) //nolint
-	reddit.GrabSaved(s.RedditPosts, s.RedditComments, s.Key)
+	reddit.Saved(s.RedditPosts, s.RedditComments, s.Key)
 
 	if err := s.Insert(s.RedditPosts.Name, s.RedditPosts.Rows); err != nil {
 		fmt.Println(err)

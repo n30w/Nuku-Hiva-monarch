@@ -18,9 +18,9 @@ var (
 	totalRequests           = 1  // Amount of requests to make to Reddit.
 )
 
-// GrabSaved reads all cached posts on the Reddit account.
+// Saved reads all cached posts on the Reddit account.
 // This can be used to mass refresh an entire SQL database.
-func GrabSaved(postsTable, commentsTable models.DBTable, key credentials.Authenticator) error {
+func Saved(postsTable, commentsTable models.DBTable, key credentials.Authenticator) error {
 
 	var mySavedPosts []*reddit.Post
 	var mySavedComments []*reddit.Comment
