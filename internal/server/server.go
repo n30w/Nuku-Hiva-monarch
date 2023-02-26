@@ -1,7 +1,6 @@
 package server
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,15 +12,15 @@ import (
 )
 
 // New returns a new server prototype.
-func New() *Server {
+func New(redditKey, dbKey credentials.Authenticator, sqlModel *models.SQL) *Server {
 	return &Server{
 		RedditPosts:    models.NewTable("posts"),
 		RedditComments: models.NewTable("comments"),
 		DBPosts:        models.NewTable("posts"),
 		DBComments:     models.NewTable("comments"),
-		RedditKey:      &credentials.RedditKey{},
-		DBKey:          &credentials.SQLKey{},
-		Sql:            models.NewSQL(&sql.DB{}),
+		RedditKey:      redditKey,
+		DBKey:          dbKey,
+		Sql:            sqlModel,
 	}
 }
 
@@ -110,14 +109,13 @@ func (s *Server) Start(port int, env string) error {
 // Initialize initializes a connection to a database
 func (s *Server) Initialize(driverName string) *Server {
 	var err error
-	var db *sql.DB
 
-	db, err = models.Open(driverName, s.DBKey)
+	s.Sql.DB, err = models.Open(driverName, s.DBKey)
 	if err != nil {
 		panic(style.Warn.Sprint(err))
 	}
 
-	err = db.Ping()
+	err = s.Sql.DB.Ping()
 	if err != nil {
 		panic(style.Warn.Sprint(err))
 	}
