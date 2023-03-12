@@ -127,7 +127,7 @@ func (p *SQL) Delete(tableName string) error {
 	return nil
 }
 
-// Retrieve stores the most recent n rows from a SQL table
+// Retrieve stores the most recent n rows from an SQL table
 // into the parameterized table.
 func (p *SQL) Retrieve(amount Amount, tables ...DBTable) error {
 	for _, table := range tables {
@@ -152,7 +152,7 @@ func (p *SQL) Retrieve(amount Amount, tables ...DBTable) error {
 			}
 
 		default:
-			return errors.New("connect.go: amount parameter must be 'all' or 'some'")
+			return errors.New("connect.go: invalid amount parameter")
 		}
 
 		if err != nil {

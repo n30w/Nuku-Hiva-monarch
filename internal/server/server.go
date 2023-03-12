@@ -25,9 +25,15 @@ func New(redditKey, dbKey credentials.Authenticator, sqlModel *models.SQL) *Serv
 }
 
 type Server struct {
+	// Table models used for data manipulation and processing.
 	RedditPosts, RedditComments, DBPosts, DBComments models.DBTable
-	RedditKey, DBKey                                 credentials.Authenticator
-	Sql                                              *models.SQL
+
+	// Credentials like secrets stored in environment variables that
+	// are functionally retrievable by these objects.
+	RedditKey, DBKey credentials.Authenticator
+
+	// Sql object to perform sql operations on a remote database.
+	Sql *models.SQL
 }
 
 // update retrieves the saved reddit posts and comments, and updates the SQL database
@@ -69,6 +75,7 @@ func (s *Server) scanDelete() error {
 	return nil
 }
 
+// populate grabs all the saved content from Reddit and adds it to the database.
 func (s *Server) populate() error {
 	reddit.Saved(s.RedditPosts, s.RedditComments, s.RedditKey)
 
@@ -106,7 +113,7 @@ func (s *Server) Start(port int, env string) error {
 	return nil
 }
 
-// Initialize initializes a connection to a database
+// Initialize initializes a connection to a database using the server's sql database object.
 func (s *Server) Initialize(driverName string) *Server {
 	var err error
 

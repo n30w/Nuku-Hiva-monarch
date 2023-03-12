@@ -15,9 +15,9 @@ var (
 	env = os.Getenv("ENVIRONMENT")
 	err error
 
-	db = models.NewSQL(&sql.DB{})
 	rk = &credentials.RedditKey{}
 	sk = &credentials.SQLKey{}
+	db = models.NewSQL(&sql.DB{})
 )
 
 func main() {

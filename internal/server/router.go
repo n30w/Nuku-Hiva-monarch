@@ -5,9 +5,10 @@ import (
 	"net/http"
 )
 
+// serverOperation is what the httpHandler calls when a request is received.
 type serverOperation func() error
 
-func scanDeleteHandler(f serverOperation) func(w http.ResponseWriter, r *http.Request) {
+func scanDeleteHandler(f serverOperation) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f(); err != nil {
 			w.Write([]byte(fmt.Sprint(err))) //nolint
@@ -19,7 +20,7 @@ func scanDeleteHandler(f serverOperation) func(w http.ResponseWriter, r *http.Re
 }
 
 // updateHandler is an http handler that handles requests to update the database.
-func updateHandler(f serverOperation) func(w http.ResponseWriter, r *http.Request) {
+func updateHandler(f serverOperation) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f(); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -29,11 +30,12 @@ func updateHandler(f serverOperation) func(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func populateHandler(f serverOperation) func(w http.ResponseWriter, r *http.Request) {
+func populateHandler(f serverOperation) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f(); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
+
 		w.Write([]byte("database successfully populated")) //nolint
 	}
 }

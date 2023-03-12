@@ -45,7 +45,7 @@ func (skm *sqlKeyMock) use() string {
 
 func TestAuthenticatorInterface(t *testing.T) {
 
-	t.Run("reddit key Use", func(t *testing.T) {
+	t.Run("reddit key Use return correct type", func(t *testing.T) {
 
 		rk := &redditKeyMock{}
 
@@ -57,7 +57,7 @@ func TestAuthenticatorInterface(t *testing.T) {
 		}
 	})
 
-	t.Run("sql key Use", func(t *testing.T) {
+	t.Run("sql key Use return correct type", func(t *testing.T) {
 
 		sk := &sqlKeyMock{}
 
