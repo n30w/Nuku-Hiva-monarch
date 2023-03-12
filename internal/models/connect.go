@@ -11,6 +11,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql" // The underscore will autoload the dependency.
 	// Do not need to call something like "godotenv.Load()"
+	"github.com/n30w/andthensome/internal/credentials"
 	"github.com/n30w/andthensome/internal/style"
 )
 
@@ -23,9 +24,15 @@ type SQL struct {
 	*sql.DB
 }
 
-// NewSQL returns a new SQL object.
+// NewSQL creates and returns a new SQL object.
 func NewSQL(db *sql.DB) *SQL {
 	return &SQL{DB: db}
+}
+
+// Open opens a new connection to a database with an SQL Driver.
+func Open(driverName string, auth credentials.Authenticator) (*sql.DB, error) {
+	db, err := sql.Open("mysql", auth.Use().(string))
+	return db, err
 }
 
 type RelationalDB interface {
@@ -33,6 +40,14 @@ type RelationalDB interface {
 	Delete(tableName string) error
 	Retrieve(amount Amount, tables ...DBTable) error
 	Update(planetscale, reddit DBTable, v Verb) error
+}
+
+// Operator performs CRUD operations.
+type Operator interface {
+	Create() error
+	Read() error
+	Update() error
+	Delete() error
 }
 
 // Insert creates a string consisting of all the rows
@@ -112,7 +127,7 @@ func (p *SQL) Delete(tableName string) error {
 	return nil
 }
 
-// Retrieve stores the most recent n rows from a SQL table
+// Retrieve stores the most recent n rows from an SQL table
 // into the parameterized table.
 func (p *SQL) Retrieve(amount Amount, tables ...DBTable) error {
 	for _, table := range tables {
@@ -137,7 +152,7 @@ func (p *SQL) Retrieve(amount Amount, tables ...DBTable) error {
 			}
 
 		default:
-			return errors.New("connect.go: amount parameter must be 'all' or 'some'")
+			return errors.New("connect.go: invalid amount parameter")
 		}
 
 		if err != nil {

@@ -19,6 +19,7 @@ var (
 			StopColors:      []string{"fgGreen"},
 		},
 	)
+
 	Warn        = color.New(color.FgRed)
 	Result      = color.New(color.FgGreen)
 	Information = color.New(color.FgHiMagenta)

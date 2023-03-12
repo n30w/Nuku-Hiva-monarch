@@ -2,6 +2,7 @@ package reddit
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -13,22 +14,20 @@ import (
 )
 
 var (
-	ResultsPerRedditRequest = 50
+	ResultsPerRedditRequest = 50 // Number of saved objects to return
+	totalRequests           = 1  // Amount of requests to make to Reddit.
 )
 
-// GrabSaved reads all cached posts on the Reddit account.
-// This can be used to mass refresh an entire SQL database. //TODO make this return error
-func GrabSaved(postsTable, commentsTable models.DBTable, key *credentials.Key) {
+// Saved reads all cached posts on the Reddit account.
+// This can be used to mass refresh an entire SQL database.
+func Saved(postsTable, commentsTable models.DBTable, key credentials.Authenticator) error {
 
 	var mySavedPosts []*reddit.Post
 	var mySavedComments []*reddit.Comment
 	var response *reddit.Response
 
 	// Last position of for loops
-	lastPos1 := 0
-	lastPos2 := 0
-
-	totalRequests := 1
+	lastPos1, lastPos2 := 0, 0
 
 	ctx := context.Background()
 	opts := &reddit.ListUserOverviewOptions{
@@ -43,20 +42,22 @@ func GrabSaved(postsTable, commentsTable models.DBTable, key *credentials.Key) {
 
 	// Establish connection to Reddit API
 	httpClient := &http.Client{Timeout: time.Second * 30}
-	client, err := reddit.NewClient(*key.RedditKey(), reddit.WithHTTPClient(httpClient))
+	redditKey := key.Use().(*reddit.Credentials)
+	client, err := reddit.NewClient(*redditKey, reddit.WithHTTPClient(httpClient))
 
 	if err != nil {
-		log.Println(style.Warn.Sprint("Login failed :("))
+		return errors.New("authentication with Reddit API failed:" + err.Error())
 	} else {
 		log.Println(style.Information.Sprint("Contacting Reddit API..."))
 	}
 
 	_ = style.Spinner.Start()
 
+	// From the API response, put data into defined structs for further processing.
 	for i := 0; i < totalRequests; i++ {
 		mySavedPosts, mySavedComments, response, err = client.User.Saved(ctx, opts)
 		if err != nil {
-			log.Fatal(style.Warn.Sprint(err))
+			return err
 		}
 
 		// TODO go routine optimization can occur here
@@ -91,9 +92,11 @@ func GrabSaved(postsTable, commentsTable models.DBTable, key *credentials.Key) {
 
 	_ = style.Spinner.Stop()
 
-	log.Print(style.Result.Sprint("Saved posts and comments retrieved"))
+	log.Print(style.Result.Sprint("saved posts and comments retrieved"))
 	// log.Print(Result.Sprintf("Comments: %x", commentsTable.Rows))
 	if err != nil {
-		log.Fatal(style.Warn.Sprint(err))
+		return err
 	}
+
+	return nil
 }

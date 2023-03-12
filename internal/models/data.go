@@ -40,23 +40,13 @@ type Row[I col, T col] struct {
 }
 
 // NewRow returns a row object given column values.
-func NewRow(col1 int, col2, col3, col4, col5 string) *Row[id, text] {
-	return newRow(
-		id(col1),
-		text(col2),
-		text(col3),
-		text(col4),
-		text(col5),
-	)
-}
-
-func newRow(i id, col2, col3, col4, col5 text) *Row[id, text] {
+func NewRow(i int, col2, col3, col4, col5 string) *Row[id, text] {
 	return &Row[id, text]{
-		Col1: i,
-		Col2: col2,
-		Col3: col3,
-		Col4: col4,
-		Col5: col5,
+		Col1: id(i),
+		Col2: text(col2),
+		Col3: text(col3),
+		Col4: text(col4),
+		Col5: text(col5),
 	}
 }
 
@@ -76,17 +66,6 @@ type Table[T Row[id, text]] struct {
 	Rows Rows
 }
 
-// NewTable creates and returns a new table for use.
-func NewTable(name string) *Table[Row[id, text]] {
-	return newTable(name)
-}
-
-func newTable(name string) *Table[Row[id, text]] {
-	return &Table[Row[id, text]]{
-		Name: name,
-	}
-}
-
 func (t *Table[Row]) String() string {
 	var sb strings.Builder
 	for _, row := range t.Rows {
@@ -98,12 +77,15 @@ func (t *Table[Row]) String() string {
 	return sb.String()
 }
 
-// ClearTables clears a table's row of its column values. Resets it basically.
-func ClearTables(tables ...DBTable) { // TODO go routine optimization can occur here
-	clearTables(tables)
+// NewTable creates and returns a new table for use.
+func NewTable(name string) *Table[Row[id, text]] {
+	return &Table[Row[id, text]]{
+		Name: name,
+	}
 }
 
-func clearTables(tables []DBTable) {
+// ClearTables clears a table's row of its column values. Resets it basically.
+func ClearTables(tables ...DBTable) {
 	for _, table := range tables {
 		for _, row := range table.Rows {
 			if row == nil {
@@ -120,10 +102,6 @@ func clearTables(tables []DBTable) {
 
 // CreateTable instantiates and returns a pointer to a populated table with zero values.
 func CreateTable(name string) DBTable {
-	return createTable(name)
-}
-
-func createTable(name string) DBTable {
 	table := &Table[Row[id, text]]{Name: name}
 
 	for i := 0; i < len(table.Rows); i++ {

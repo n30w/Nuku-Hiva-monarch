@@ -17,10 +17,10 @@ import (
 func BenchmarkGrabSaved(b *testing.B) {
 	postsTable := models.NewTable("posts")
 	commentsTable := models.NewTable("comments")
-	key := credentials.NewKey()
+	key := &credentials.RedditKey{}
 
 	for i := 0; i < b.N; i++ {
-		GrabSaved(postsTable, commentsTable, key)
+		Saved(postsTable, commentsTable, key)
 	}
 
 }

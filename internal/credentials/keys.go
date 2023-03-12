@@ -6,16 +6,17 @@ import (
 	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
-// Key represents credentials used to log in to APIs.
-type Key struct{}
-
-// NewKey creates a new key object that can access keys.
-func NewKey() *Key {
-	return &Key{}
+type Authenticator interface {
+	Use() any // Use passes a provided key into a function or method parameter.
 }
 
-// RedditKey returns reddit credentials based on environment variables.
-func (k *Key) RedditKey() *reddit.Credentials {
+type RedditKey struct{}
+
+func (k *RedditKey) Use() any {
+	return k.use()
+}
+
+func (k *RedditKey) use() *reddit.Credentials {
 	return &reddit.Credentials{
 		ID:       os.Getenv("ID"),
 		Secret:   os.Getenv("SECRET"),
@@ -24,7 +25,12 @@ func (k *Key) RedditKey() *reddit.Credentials {
 	}
 }
 
-// SQLKey returns an SQL access key via environment variables.
-func (k *Key) SQLKey() string {
+type SQLKey struct{}
+
+func (k *SQLKey) Use() any {
+	return k.use()
+}
+
+func (k *SQLKey) use() string {
 	return os.Getenv(os.Getenv("ENVIRONMENT"))
 }
