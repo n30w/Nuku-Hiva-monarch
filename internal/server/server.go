@@ -96,6 +96,8 @@ func (s *Server) Start(port int, env string) error {
 	log.Print(style.Start.Sprintf("Starting andthensome on %s", env))
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("/", homeHandler)
+
 	mux.HandleFunc("/api/update", updateHandler(s.update))
 	mux.HandleFunc("/api/scanDelete", scanDeleteHandler(s.scanDelete))
 
