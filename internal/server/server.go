@@ -113,6 +113,19 @@ func (s *Server) Start(port int, env string) error {
 	return nil
 }
 
+// OneShot sends updates the database once. This is used in
+// command line operations where a full server is not needed.
+func (s *Server) OneShot() error {
+
+	log.Print(style.Start.Sprintf("Starting andthensome in ONESHOT mode."))
+	err := s.update()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Initialize initializes a connection to a database using the server's sql database object.
 func (s *Server) Initialize(driverName string) *Server {
 	var err error
