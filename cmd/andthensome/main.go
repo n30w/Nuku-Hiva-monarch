@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"os"
 
 	"github.com/n30w/andthensome/internal/credentials"
@@ -21,10 +22,18 @@ var (
 )
 
 func main() {
-	err = server.
-		New(rk, sk, db).
-		Initialize("mysql").
-		Start(4000, env)
+	s := server.New(rk, sk, db).Initialize("mysql")
+
+	oneShotMode := *flag.Bool("osm", false, "launch in oneshot mode")
+
+	flag.Parse()
+
+	switch oneShotMode {
+	case true:
+		err = s.Start(4000, env)
+	case false:
+		err = s.OneShot()
+	}
 
 	if err != nil {
 		panic(err)
