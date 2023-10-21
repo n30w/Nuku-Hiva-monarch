@@ -1,3 +1,10 @@
 {
+<<<<<<< Updated upstream
     "cmake.configureOnOpen": false
+=======
+    "cmake.configureOnOpen": false,
+    "cSpell.words": [
+        "oneshot"
+    ]
+>>>>>>> Stashed changes
 }
