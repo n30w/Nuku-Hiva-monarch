@@ -5,7 +5,7 @@ name: Go
 
 on:
   push:
-    branches: ["master", "dev"]
+    branches: ["master"]
   pull_request:
     branches: ["master"]
 
@@ -18,7 +18,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.19
+          go-version: 1.22
 
       - name: Vendor
         run: go mod vendor

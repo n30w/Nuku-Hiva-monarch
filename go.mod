@@ -1,6 +1,6 @@
 module github.com/n30w/andthensome
 
-go 1.22.1
+go 1.22
 
 require (
 	github.com/fatih/color v1.16.0
@@ -12,7 +12,6 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
