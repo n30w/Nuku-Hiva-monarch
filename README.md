@@ -1,10 +1,12 @@
-# Andthensome
+# And Then Some
 
 Reddit only caches 1000 saved posts+comments. This is a problem if you keep saving posts and want to view your oldest ones.
 
-The name for this project is named "Andthensome", because it has the ability to retrieve all your Reddit posts, and then some, because it can retrieve any updates as well.
+The name for this project is named "And Then Some", because it has the ability to retrieve all your Reddit posts, and then some, because it can retrieve any updates as well.
 
 Pushes or merges to master branch will initiate github actions.
+
+## Docker
 
 Docker build command:
 
@@ -18,6 +20,12 @@ Docker run command:
 
 - Use ```make bin``` to create a binary, or ```make run``` to run it.
 
+### Migration from MySQL
+
+As of March 29, 2024, I have migrated from Planetscale's MySQL database to NeonDB's Postgresql database. Planetscale had discontinued their free tier on April 8, 2024. I used this guide to migrate to Neon: [Migrate from MySQL to Neon](https://neon.tech/docs/import/migrate-mysql). The guide uses ```pgloader```.
+
+There's also [this online tool](https://www.sqlines.com/online) that converts MySQL statements to Postgresql ones. Pretty sure one could use ChatGPT as well.
+
 ## TODO
 
 - [x] Store reddit credentials in .env file
@@ -26,8 +34,8 @@ Docker run command:
 - [x] Use a docker container for API calls
 - [x] Deletion function for SQL db
 - [ ] Implement Go Routines and channels for faster performance (blazingly fast you could say)
+- [ ] Switch to Taskfile.dev
 - [ ] Benchmark Tests for receiving data
-- [ ] Log planetscale updates to webpage
 
 ## Links
 
